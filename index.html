@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Son Ich Ngo — CFD &amp; AI Researcher</title>
+<meta name="description" content="Son Ich Ngo — Principal Researcher at CoSPE, Hankyong National University. Computational fluid dynamics, multiphase systems, physics-informed neural networks, hydrogen production.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --background: 201 100% 13%;
+    --foreground: 0 0% 100%;
+    --muted-foreground: 240 4% 66%;
+    --border: 0 0% 18%;
+    --font-display: 'Instrument Serif', serif;
+    --font-body: 'Inter', sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  html, body { margin: 0; padding: 0; background: hsl(var(--background)); }
+  body { font-family: var(--font-body); color: hsl(var(--foreground)); -webkit-font-smoothing: antialiased; }
+  a { color: hsl(var(--muted-foreground)); text-decoration: none; transition: color .2s; }
+  a:hover { color: hsl(var(--foreground)); }
+
+  .liquid-glass {
+    background: rgba(255, 255, 255, 0.01);
+    background-blend-mode: luminosity;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    border: none;
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1);
+    position: relative;
+    overflow: hidden;
+    transition: transform .2s ease;
+  }
+  .liquid-glass:hover { transform: scale(1.03); }
+  .liquid-glass::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1.4px;
+    background: linear-gradient(180deg,
+      rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.15) 20%,
+      rgba(255,255,255,0) 40%, rgba(255,255,255,0) 60%,
+      rgba(255,255,255,0.15) 80%, rgba(255,255,255,0.45) 100%);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  @keyframes fade-rise {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fade-rise { animation: fade-rise 0.8s ease-out both; }
+  .animate-fade-rise-delay { animation: fade-rise 0.8s ease-out 0.2s both; }
+  .animate-fade-rise-delay-2 { animation: fade-rise 0.8s ease-out 0.4s both; }
+
+  .reveal { opacity: 0; transform: translateY(24px); transition: opacity .8s ease-out, transform .8s ease-out; }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+  @media (prefers-reduced-motion: reduce) {
+    .animate-fade-rise, .animate-fade-rise-delay, .animate-fade-rise-delay-2 { animation: none; }
+    .reveal { opacity: 1; transform: none; transition: none; }
+    html { scroll-behavior: auto; }
+  }
+
+  /* ---------- Hero ---------- */
+  .hero-wrap { position: relative; min-height: 100vh; overflow: hidden; background: hsl(var(--background)); display: flex; flex-direction: column; }
+  .hero-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; }
+  .hero-scrim { position: absolute; inset: 0; z-index: 1; pointer-events: none;
+    background: linear-gradient(180deg, rgba(0,34,66,0.25) 0%, rgba(0,34,66,0.15) 45%, hsl(var(--background)) 100%); }
+
+  nav { position: relative; z-index: 10; display: flex; align-items: center; justify-content: space-between;
+    padding: 24px 32px; max-width: 1280px; margin: 0 auto; width: 100%; }
+  .logo { font-family: var(--font-display); font-size: 30px; letter-spacing: -0.025em; color: hsl(var(--foreground)); }
+  .logo sup { font-size: 12px; }
+  .nav-links { display: flex; align-items: center; gap: 32px; font-size: 14px; }
+  .nav-links a.active { color: hsl(var(--foreground)); }
+  .btn { border-radius: 9999px; font-family: var(--font-body); color: hsl(var(--foreground)); cursor: pointer; display: inline-block; }
+  .btn-sm { padding: 10px 24px; font-size: 14px; }
+  .btn-lg { padding: 20px 56px; font-size: 16px; margin-top: 48px; }
+
+  .hero { position: relative; z-index: 10; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; padding: 90px 24px; }
+  .hero h1 { font-family: var(--font-display); font-size: 96px; line-height: 0.95; letter-spacing: -2.46px;
+    max-width: 1280px; font-weight: 400; margin: 0; color: hsl(var(--foreground)); }
+  .hero h1 em { font-style: normal; color: hsl(var(--muted-foreground)); }
+  .hero .sub { color: hsl(var(--muted-foreground)); font-size: 18px; max-width: 672px; margin: 32px 0 0; line-height: 1.625; }
+  .hero .sub strong { color: hsl(var(--foreground)); font-weight: 500; }
+
+  /* ---------- Sections ---------- */
+  section.page { max-width: 1120px; margin: 0 auto; padding: 96px 32px; }
+  .section-label { font-size: 13px; letter-spacing: 0.2em; text-transform: uppercase; color: hsl(var(--muted-foreground)); margin: 0 0 16px; }
+  h2.section-title { font-family: var(--font-display); font-weight: 400; font-size: 52px; letter-spacing: -1.2px; line-height: 1.02; margin: 0 0 40px; }
+  h2.section-title em { font-style: normal; color: hsl(var(--muted-foreground)); }
+
+  /* Stats */
+  .stats { position: relative; z-index: 10; display: flex; flex-wrap: wrap; justify-content: center; gap: 16px; padding: 0 24px 72px; }
+  .stat { border-radius: 24px; padding: 22px 36px; text-align: center; min-width: 150px; }
+  .stat .num { font-family: var(--font-display); font-size: 40px; line-height: 1; }
+  .stat .lbl { font-size: 13px; color: hsl(var(--muted-foreground)); margin-top: 8px; }
+
+  /* About */
+  .about-grid { display: grid; grid-template-columns: 280px 1fr; gap: 56px; align-items: start; }
+  .avatar { width: 220px; height: 220px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-display); font-size: 72px; background: rgba(255,255,255,0.04); }
+  .about-text p { color: hsl(var(--muted-foreground)); line-height: 1.7; font-size: 16px; margin: 0 0 18px; }
+  .about-text p strong { color: hsl(var(--foreground)); font-weight: 500; }
+  .affil { border-left: 2px solid hsla(0,0%,100%,0.18); padding-left: 18px; margin-top: 28px; }
+  .affil div { font-size: 14px; color: hsl(var(--muted-foreground)); margin-bottom: 10px; line-height: 1.55; }
+  .affil div strong { color: hsl(var(--foreground)); font-weight: 500; }
+
+  /* Research */
+  .topics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .topic { border-radius: 24px; padding: 28px; }
+  .topic h3 { font-family: var(--font-display); font-weight: 400; font-size: 24px; letter-spacing: -0.4px; margin: 0 0 10px; }
+  .topic p { color: hsl(var(--muted-foreground)); font-size: 14px; line-height: 1.6; margin: 0; }
+
+  /* Publications */
+  .pub-tools { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 32px; align-items: center; }
+  .pub-search { border-radius: 9999px; padding: 12px 22px; font-size: 14px; font-family: var(--font-body);
+    color: hsl(var(--foreground)); outline: none; width: 300px; max-width: 100%;
+    background: rgba(255,255,255,0.04); border: 1px solid hsla(0,0%,100%,0.14); }
+  .pub-search::placeholder { color: hsl(var(--muted-foreground)); }
+  .sort-btn { font-size: 13px; padding: 10px 20px; border-radius: 9999px; cursor: pointer; font-family: var(--font-body);
+    color: hsl(var(--muted-foreground)); background: transparent; border: 1px solid hsla(0,0%,100%,0.14); transition: color .2s, border-color .2s; }
+  .sort-btn.active, .sort-btn:hover { color: hsl(var(--foreground)); border-color: hsla(0,0%,100%,0.4); }
+  .pub-year { font-family: var(--font-display); font-size: 32px; letter-spacing: -0.5px; margin: 40px 0 8px; color: hsl(var(--muted-foreground)); }
+  .pub { padding: 20px 0; border-bottom: 1px solid hsla(0,0%,100%,0.09); }
+  .pub a.title { color: hsl(var(--foreground)); font-size: 16px; line-height: 1.5; font-weight: 500; }
+  .pub a.title:hover { color: hsl(var(--muted-foreground)); }
+  .pub .meta { color: hsl(var(--muted-foreground)); font-size: 13.5px; margin-top: 6px; line-height: 1.5; }
+  .pub .meta .cites { display: inline-block; margin-left: 10px; padding: 2px 10px; border-radius: 9999px;
+    border: 1px solid hsla(0,0%,100%,0.15); font-size: 12px; }
+  .pub-more { text-align: center; margin-top: 48px; }
+
+  /* Contact */
+  .contact-card { border-radius: 32px; padding: 56px 48px; text-align: center; }
+  .contact-card h2 { font-family: var(--font-display); font-weight: 400; font-size: 48px; letter-spacing: -1.2px; margin: 0 0 16px; }
+  .contact-card p { color: hsl(var(--muted-foreground)); max-width: 560px; margin: 0 auto 8px; line-height: 1.65; font-size: 16px; }
+  .contact-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 16px; margin-top: 36px; }
+
+  footer { text-align: center; padding: 48px 24px 40px; color: hsl(var(--muted-foreground)); font-size: 13px; }
+  footer .foot-logo { font-family: var(--font-display); font-size: 22px; color: hsl(var(--foreground)); margin-bottom: 10px; }
+
+  @media (max-width: 1023px) {
+    .hero h1 { font-size: 72px; }
+    .topics { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 767px) {
+    .nav-links { display: none; }
+    .hero h1 { font-size: 48px; letter-spacing: -1.4px; }
+    .hero .sub { font-size: 16px; }
+    h2.section-title { font-size: 36px; }
+    section.page { padding: 64px 24px; }
+    .about-grid { grid-template-columns: 1fr; gap: 32px; }
+    .topics { grid-template-columns: 1fr; }
+    .btn-lg { padding: 16px 40px; }
+    .contact-card { padding: 40px 24px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ HERO ============ -->
+<div class="hero-wrap" id="home">
+  <video class="hero-video" autoplay loop muted playsinline
+    src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260314_131748_f2ca2a28-fed7-44c8-b9a9-bd9acdd5ec31.mp4"
+    onerror="this.remove()"></video>
+  <div class="hero-scrim"></div>
+
+  <nav>
+    <div class="logo">Son Ich Ngo<sup>®</sup></div>
+    <div class="nav-links">
+      <a href="#home" class="active">Home</a>
+      <a href="#about">About</a>
+      <a href="#research">Research</a>
+      <a href="#publications">Publications</a>
+      <a href="#contact">Contact</a>
+    </div>
+    <a class="liquid-glass btn btn-sm" href="https://scholar.google.com/citations?user=z9jCEXQAAAAJ&hl=en" target="_blank" rel="noopener">Google Scholar</a>
+  </nav>
+
+  <section class="hero">
+    <h1 class="animate-fade-rise">Where <em>fluids</em> meet <em>computation.</em></h1>
+    <p class="sub animate-fade-rise-delay"><strong>Son Ich Ngo, Ph.D.</strong> — Principal Researcher at the Center of Sustainable Process Engineering, Hankyong National University. Modeling multiphase reactors with computational fluid dynamics and physics-informed neural networks for a cleaner-energy future.</p>
+    <a class="liquid-glass btn btn-lg animate-fade-rise-delay-2" href="#publications">View Publications</a>
+  </section>
+
+  <div class="stats animate-fade-rise-delay-2">
+    <div class="liquid-glass stat"><div class="num">1,126+</div><div class="lbl">Citations</div></div>
+    <div class="liquid-glass stat"><div class="num">20</div><div class="lbl">h-index</div></div>
+    <div class="liquid-glass stat"><div class="num">25</div><div class="lbl">i10-index</div></div>
+    <div class="liquid-glass stat"><div class="num">40+</div><div class="lbl">Journal Articles</div></div>
+  </div>
+</div>
+
+<!-- ============ ABOUT ============ -->
+<section class="page reveal" id="about">
+  <p class="section-label">About</p>
+  <h2 class="section-title">A researcher of <em>flows, reactors,</em> and the models that explain them.</h2>
+  <div class="about-grid">
+    <div class="liquid-glass avatar">SN</div>
+    <div class="about-text">
+      <p><strong>Son Ich Ngo</strong> (Ngô Ích Sơn / 노익선) is a Principal Researcher at the <strong>Center of Sustainable Process Engineering (CoSPE)</strong>, Department of Chemical Engineering, Hankyong National University, Korea.</p>
+      <p>His work spans computational fluid dynamics of multiphase systems — bubble columns, fluidized beds, and molten-metal reactors — applied to hydrogen production, CO<sub>2</sub> methanation, biomass gasification, and fluorinated-gas abatement. Recent research combines CFD with machine learning, including physics-informed neural networks for chemical reactor modeling.</p>
+      <div class="affil">
+        <div><strong>Principal Researcher</strong> — Center of Sustainable Process Engineering (CoSPE), Hankyong National University, Anseong, Korea</div>
+        <div><strong>Faculty of Heat and Refrigeration Engineering</strong> — Industrial University of Ho Chi Minh City, Vietnam</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ RESEARCH ============ -->
+<section class="page reveal" id="research">
+  <p class="section-label">Research</p>
+  <h2 class="section-title">Interests &amp; <em>expertise.</em></h2>
+  <div class="topics">
+    <div class="liquid-glass topic"><h3>Multiphase CFD</h3><p>Eulerian and volume-of-fluid simulation of bubble columns, fluidized beds, and gas–liquid–solid reactors, from lab to industrial scale.</p></div>
+    <div class="liquid-glass topic"><h3>AI for CFD</h3><p>Physics-informed neural networks (PINNs) and machine-learning surrogates for parameter identification and reactor model solution.</p></div>
+    <div class="liquid-glass topic"><h3>Hydrogen Production</h3><p>Methane pyrolysis in molten-metal bubble column reactors, steam methane reforming, and CO<sub>2</sub>-free hydrogen pathways.</p></div>
+    <div class="liquid-glass topic"><h3>CO<sub>2</sub> Methanation</h3><p>Fixed-bed and fluidized-bed reactor design, reaction kinetics, and heat-transfer optimization for power-to-gas systems.</p></div>
+    <div class="liquid-glass topic"><h3>Biomass &amp; Energy</h3><p>Dual circulating fluidized-bed gasification models and thermochemical conversion of biomass and waste plastics.</p></div>
+    <div class="liquid-glass topic"><h3>Environmental Processes</h3><p>Destruction of fluorinated gases (SF<sub>6</sub>, NF<sub>3</sub>, CF<sub>4</sub>) in molten-metal reactors and offshore oil–water separation.</p></div>
+  </div>
+</section>
+
+<!-- ============ PUBLICATIONS ============ -->
+<section class="page reveal" id="publications">
+  <p class="section-label">Publications</p>
+  <h2 class="section-title">Selected <em>journal articles.</em></h2>
+  <div class="pub-tools">
+    <input class="pub-search" id="pubSearch" type="text" placeholder="Search title or journal…">
+    <button class="sort-btn active" id="sortYear">Newest first</button>
+    <button class="sort-btn" id="sortCites">Most cited</button>
+  </div>
+  <div id="pubList"></div>
+  <div class="pub-more">
+    <a class="liquid-glass btn btn-sm" href="https://scholar.google.com/citations?user=z9jCEXQAAAAJ&hl=en" target="_blank" rel="noopener">Full list on Google Scholar</a>
+  </div>
+</section>
+
+<!-- ============ CONTACT ============ -->
+<section class="page reveal" id="contact">
+  <div class="liquid-glass contact-card">
+    <h2>Let's <em>collaborate.</em></h2>
+    <p>Open to research collaboration in CFD, multiphase reactors, and AI-assisted process modeling.</p>
+    <p>Center of Sustainable Process Engineering, Hankyong National University,<br>Jungang-ro 327, Anseong-si, Gyeonggi-do 17579, Korea</p>
+    <div class="contact-links">
+      <a class="liquid-glass btn btn-sm" href="mailto:ngoichson@hknu.ac.kr">ngoichson@hknu.ac.kr</a>
+      <a class="liquid-glass btn btn-sm" href="http://cospe.hknu.ac.kr/" target="_blank" rel="noopener">CoSPE Lab</a>
+      <a class="liquid-glass btn btn-sm" href="https://scholar.google.com/citations?user=z9jCEXQAAAAJ&hl=en" target="_blank" rel="noopener">Google Scholar</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="foot-logo">Son Ich Ngo<sup style="font-size:10px">®</sup></div>
+  <div>© 2026 Son Ich Ngo · Hankyong National University</div>
+</footer>
+
+<script>
+  const PUBS = [
+    { t: "Hydrodynamics and chemical reactions in a molten-metal bubble column reactor for CO2-free hydrogen production using volume-of-fluid computational fluid dynamics", v: "Journal of Industrial and Engineering Chemistry", y: 2026, c: 2 },
+    { t: "Effects of NH3 co-firing ratios on performance of a 500 MWe pulverized coal combustor using a compartment model", v: "The Canadian Journal of Chemical Engineering", y: 2026, c: 1 },
+    { t: "Hydrogen generation rate and yield of natural gas pyrolysis using a one-dimensional molten-metal bubble column reactor model", v: "Fuel 425, 139406", y: 2026, c: 0 },
+    { t: "Optimal susceptor rotation speed in hot-wall horizontal SiC epitaxy using computational fluid dynamics", v: "The Canadian Journal of Chemical Engineering 104(5), 2269-2282", y: 2026, c: 0 },
+    { t: "Experiments and modeling for non-oxidative polypropylene pyrolysis in two-stage molten metal bubble column reactors for hydrogen production", v: "International Journal of Hydrogen Energy 229, 154779", y: 2026, c: 0 },
+    { t: "Destruction and removal of nitrogen trifluoride (NF3), sulfur hexafluoride (SF6), and tetrafluoromethane (CF4) via three-stage molten-metal bubble column reactors", v: "Journal of Hazardous Materials, 141817", y: 2026, c: 0 },
+    { t: "Effects of wettability on bubble characteristics in air-water and molten-metal bubble columns using level-set volume-of-fluid computational fluid dynamics", v: "International Journal of Multiphase Flow, 105369", y: 2025, c: 4 },
+    { t: "Catalytic and non-catalytic reactions of methane pyrolysis for hydrogen production in screening and electromagnetic levitation reactors using computational fluid dynamics", v: "Journal of Industrial and Engineering Chemistry 144, 370-379", y: 2025, c: 6 },
+    { t: "One-dimensional kinetic model with novel bubble size equation in molten-metal bubble column reactors for CH4 pyrolysis", v: "AIChE Journal 70(10), e18540", y: 2024, c: 10 },
+    { t: "Effect of gas distributors on hydrodynamics in molten-metal bubble column reactors for fluorinated gas removal using computational fluid dynamics", v: "Chemical Engineering Research and Design 208, 436-445", y: 2024, c: 9 },
+    { t: "Removal of sulfur hexafluoride in molten-tin bubble column reactors: Kinetics parameter identification and scale-up studies", v: "Separation and Purification Technology 340, 126776", y: 2024, c: 9 },
+    { t: "Experiment and simulation of non-catalytic thermal decomposition of CH4 for CO2-free hydrogen production in a vertical tube", v: "International Journal of Hydrogen Energy 63, 580-595", y: 2024, c: 9 },
+    { t: "Hydrodynamics of CH4-Sn molten-metal bubble columns under electromagnetic field using computational fluid dynamics", v: "Chemical Engineering Science 286, 119668", y: 2024, c: 9 },
+    { t: "Hydrodynamics of molten-metal bubble columns in the near-bubbling field using volume of fluid computational fluid dynamics", v: "Chemical Engineering Journal 454, 140073", y: 2023, c: 41 },
+    { t: "One-dimensional kinetic model with heat transfer and axial dispersion of molten-metal bubble column reactors for hydrogen production via methane pyrolysis", v: "International Journal of Hydrogen Energy 48(92), 35821-35837", y: 2023, c: 20 },
+    { t: "Catalytic CO2 Methanation Reactors and Processes", v: "Catalysts 13(11), 1422", y: 2023, c: 6 },
+    { t: "Separation efficiency of flat- and domed-roof cyclones in high-pressure polypropylene production using computational fluid dynamics", v: "Korean Journal of Chemical Engineering 40(10), 2419-2433", y: 2023, c: 2 },
+    { t: "Hydrodynamics of gas-liquid bubble columns under bubbling, transient, and jetting flow regimes using volume of fluid computational fluid dynamics", v: "Chemical Engineering Research and Design 182, 616-628", y: 2022, c: 25 },
+    { t: "Forward physics-informed neural networks suitable for multiple operating conditions of catalytic CO2 methanation isothermal fixed-bed", v: "IFAC-PapersOnLine 55(7), 429-434", y: 2022, c: 11 },
+    { t: "Reaction Characteristics of Ni-Based Catalyst Supported by Al2O3 in a Fluidized Bed for CO2 Methanation", v: "Catalysts 12(11), 1346", y: 2022, c: 5 },
+    { t: "Solution and Parameter Identification of a Fixed-Bed Reactor Model for Catalytic CO2 Methanation Using Physics-Informed Neural Networks", v: "Catalysts 11(11), 1304", y: 2021, c: 83 },
+    { t: "Estimation of physical properties and hydrodynamics of slurry bubble column reactor for catalytic hydrocracking of vacuum residue", v: "Chemical Engineering Journal 418, 129378", y: 2021, c: 35 },
+    { t: "Experiment and numerical analysis of catalytic CO2 methanation in bubbling fluidized bed reactor", v: "Energy Conversion and Management 233, 113863", y: 2021, c: 35 },
+    { t: "Flow behavior and heat transfer in bubbling fluidized-bed with immersed heat exchange tubes for CO2 methanation", v: "Powder Technology 380, 462-474", y: 2021, c: 35 },
+    { t: "Hydrodynamics of air-kerosene bubble column under elevated pressure in homogeneous flow regime", v: "Chinese Journal of Chemical Engineering 33, 190-202", y: 2021, c: 15 },
+    { t: "A breakage model with different liquid properties for pressurized bubble columns in a homogeneous regime", v: "Korean Journal of Chemical Engineering 38(2), 264-275", y: 2021, c: 5 },
+    { t: "Multiscale Eulerian CFD of chemical processes: A review", v: "ChemEngineering 4(2), 23", y: 2020, c: 75 },
+    { t: "Flow behaviors, reaction kinetics, and optimal design of fixed- and fluidized-beds for CO2 methanation", v: "Fuel 275, 117886", y: 2020, c: 52 },
+    { t: "Computational fluid dynamics and experimental validation of a compact steam methane reformer for hydrogen production from natural gas", v: "Applied Energy 236, 340-353", y: 2019, c: 112 },
+    { t: "Optimal design of a sleeve-type steam methane reforming reactor for hydrogen production from natural gas", v: "International Journal of Hydrogen Energy 44(3), 1973-1987", y: 2019, c: 61 },
+    { t: "Hydrodynamics and simulation of air-water homogeneous bubble column under elevated pressure", v: "AIChE Journal 65(10), e16685", y: 2019, c: 44 },
+    { t: "Effect of simultaneous three-angular motion on the performance of an air-water-oil separator under offshore operation", v: "Ocean Engineering 171, 469-484", y: 2019, c: 20 },
+    { t: "Computational fluid dynamics and tar formation in a low-temperature carbonization furnace for the production of carbon fibers", v: "Journal of Industrial and Engineering Chemistry 73, 286-296", y: 2019, c: 13 },
+    { t: "Wave characteristics of coagulation bath in dry-jet wet-spinning process for polyacrylonitrile fiber production using computational fluid dynamics", v: "Processes 7(5), 314", y: 2019, c: 7 },
+    { t: "Three-phase Eulerian computational fluid dynamics of air-water-oil separator under off-shore operation", v: "Journal of Petroleum Science and Engineering 171, 731-747", y: 2018, c: 32 },
+    { t: "Prediction of degree of impregnation in thermoplastic unidirectional carbon fiber prepreg by multi-scale computational fluid dynamics", v: "Chemical Engineering Science 185, 64-75", y: 2018, c: 27 },
+    { t: "Multi-scale computational fluid dynamics of impregnation die for thermoplastic carbon fiber prepreg production", v: "Computers & Chemical Engineering 103, 58-68", y: 2017, c: 30 },
+    { t: "Effects of fluidization velocity on solid stack volume in a bubbling fluidized-bed with nozzle-type distributor", v: "Powder Technology 275, 188-198", y: 2015, c: 31 },
+    { t: "Hydrodynamics of cold-rig biomass gasifier using semi-dual fluidized-bed", v: "Powder Technology 234, 97-106", y: 2013, c: 21 },
+    { t: "Three-stage steady-state model for biomass gasification in a dual circulating fluidized-bed", v: "Energy Conversion and Management 54(1), 100-112", y: 2012, c: 73 },
+    { t: "Performance evaluation for dual circulating fluidized-bed steam gasifier of biomass using quasi-equilibrium three-stage gasification model", v: "Applied Energy 88(12), 5208-5220", y: 2011, c: 114 }
+  ];
+
+  const listEl = document.getElementById('pubList');
+  const searchEl = document.getElementById('pubSearch');
+  const byYearBtn = document.getElementById('sortYear');
+  const byCitesBtn = document.getElementById('sortCites');
+  let sortMode = 'year';
+
+  function scholarLink(title) {
+    return 'https://scholar.google.com/scholar?q=' + encodeURIComponent('"' + title + '"');
+  }
+
+  function render() {
+    const q = searchEl.value.trim().toLowerCase();
+    let pubs = PUBS.filter(p => !q || p.t.toLowerCase().includes(q) || p.v.toLowerCase().includes(q));
+    pubs = pubs.slice().sort((a, b) => sortMode === 'year' ? (b.y - a.y || b.c - a.c) : (b.c - a.c || b.y - a.y));
+    let html = '';
+    let lastYear = null;
+    for (const p of pubs) {
+      if (sortMode === 'year' && p.y !== lastYear) {
+        html += '<div class="pub-year">' + p.y + '</div>';
+        lastYear = p.y;
+      }
+      html += '<div class="pub">'
+        + '<a class="title" href="' + scholarLink(p.t) + '" target="_blank" rel="noopener">' + p.t + '</a>'
+        + '<div class="meta">' + p.v
+        + (p.c > 0 ? '<span class="cites">' + p.c + ' citations</span>' : '')
+        + '</div></div>';
+    }
+    listEl.innerHTML = html || '<p style="color:hsl(var(--muted-foreground))">No matching publications.</p>';
+  }
+
+  searchEl.addEventListener('input', render);
+  byYearBtn.addEventListener('click', () => { sortMode = 'year'; byYearBtn.classList.add('active'); byCitesBtn.classList.remove('active'); render(); });
+  byCitesBtn.addEventListener('click', () => { sortMode = 'cites'; byCitesBtn.classList.add('active'); byYearBtn.classList.remove('active'); render(); });
+  render();
+
+  const observer = new IntersectionObserver(entries => {
+    for (const e of entries) if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); }
+  }, { threshold: 0.08 });
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
