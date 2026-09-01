@@ -55,6 +55,16 @@
 
   /* ---------- hero ---------- */
   .hero{min-height:100svh;display:flex;flex-direction:column;justify-content:center;padding:140px 0 72px;text-align:center}
+  .avatar-wrap{position:relative;width:148px;height:148px;margin:0 auto 30px}
+  .avatar-wrap::before{content:'';position:absolute;inset:-5px;border-radius:50%;
+    background:conic-gradient(from var(--spin,0deg),#38bdf8,#818cf8,#2dd4bf,#38bdf8);
+    animation:spin-ring 6s linear infinite}
+  .avatar-wrap::after{content:'';position:absolute;inset:-26px;border-radius:50%;z-index:-1;
+    background:radial-gradient(circle,rgba(56,189,248,.35),transparent 70%);filter:blur(18px)}
+  @property --spin{syntax:'<angle>';initial-value:0deg;inherits:false}
+  @keyframes spin-ring{to{--spin:360deg}}
+  .avatar-wrap img{position:absolute;inset:0;width:100%;height:100%;border-radius:50%;object-fit:cover;
+    border:4px solid var(--bg);display:block}
   .badge{display:inline-flex;align-items:center;gap:8px;margin:0 auto 26px;padding:7px 16px;border-radius:999px;
     border:1px solid var(--border-strong);background:var(--card);font-size:13px;color:var(--muted);
     position:relative;overflow:hidden}
@@ -213,6 +223,7 @@
 
   <!-- ============ HERO ============ -->
   <header class="hero">
+    <div class="avatar-wrap"><img src="assets/portrait.jpg" alt="Portrait of Son Ich Ngo" width="148" height="148"></div>
     <div class="badge"><span class="dot"></span> Research Professor · Hankyong National University, Korea</div>
     <h1>Son Ich <span class="grad">Ngo</span>, Ph.D.</h1>
     <p class="sub">Bridging <strong>computational fluid dynamics</strong> and <strong>deep learning</strong> to design next-generation chemical reactors — from CO<sub>2</sub>-free hydrogen production to carbon-capture processes.</p>
