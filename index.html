@@ -360,11 +360,11 @@
     <div class="sec-head rv">
       <div class="kicker">Scholarly output</div>
       <h2>Publications</h2>
-      <p>36 peer-reviewed journal articles (Q1/Q2), 8 conference proceedings and 4 book chapters. Full record on <a href="https://scholar.google.com/citations?user=z9jCEXQAAAAJ&amp;hl=en" target="_blank" rel="noopener" style="color:var(--accent)">Google Scholar</a>.</p>
+      <p>37 peer-reviewed journal articles (Q1/Q2), 8 conference proceedings and 4 book chapters. Full record on <a href="https://scholar.google.com/citations?user=z9jCEXQAAAAJ&amp;hl=en" target="_blank" rel="noopener" style="color:var(--accent)">Google Scholar</a>.</p>
     </div>
     <div class="pub-tools rv">
       <div class="tabs" role="tablist">
-        <button class="tab active" data-cat="journal">Journal <span class="n">36</span></button>
+        <button class="tab active" data-cat="journal">Journal <span class="n">37</span></button>
         <button class="tab" data-cat="conf">Conference <span class="n">8</span></button>
         <button class="tab" data-cat="book">Book chapters <span class="n">4</span></button>
       </div>
@@ -477,6 +477,7 @@
 /* ================= data ================= */
 const PUBS = [
  // ---- Journal articles (Q1, Q2) ----
+ {c:'journal',y:2026,t:'Air gasification of Vietnamese rice husk in a lab-scale bubbling fluidized bed: Experimental characterization, bed hydrodynamics, and ash agglomeration screening',a:'Nguyen, Tien Van; Phuc, Bao Nguyen Ha; {SIN}; Nguyen, Khoi Hoang',v:'Biomass and Bioenergy 217 (2027), 109973'},
  {c:'journal',y:2026,t:'Hydrogen generation rate and yield of natural gas pyrolysis using a one-dimensional molten-metal bubble column reactor model',a:'{SIN}; Lim, Young-Il; Go, Eunsol',v:'Fuel 425, 139406'},
  {c:'journal',y:2026,t:'Experiments and modeling for non-oxidative polypropylene pyrolysis in two-stage molten metal bubble column reactors for hydrogen production',a:'Le, Bang Thanh; {SIN}; Lim, Young-Il; Lee, Eunji; Park, Geunyong; Lee, Young Jae; Lee, Uen-Do',v:'International Journal of Hydrogen Energy'},
  {c:'journal',y:2025,t:'Effects of wettability on bubble characteristics in air-water and molten-metal bubble columns using level-set volume-of-fluid computational fluid dynamics',a:'{SIN}; Lim, Young-Il; Lee, Uen-Do; Lee, Youngjae; Kim, Sung Won',v:'International Journal of Multiphase Flow 192'},
@@ -581,7 +582,7 @@ let counted=false;
 new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting&&!counted){counted=true;
   count(document.getElementById('c-cit'),1125);
   count(document.getElementById('c-h'),17);
-  count(document.getElementById('c-pub'),48);
+  count(document.getElementById('c-pub'),49);
   count(document.getElementById('c-yr'),15,'+');
 }})},{threshold:.4}).observe(document.querySelector('.stats'));
 
