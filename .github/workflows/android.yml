@@ -10,6 +10,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -66,3 +68,26 @@ jobs:
           name: docscan-v${{ steps.apk.outputs.version }}-debug-apk
           path: dist/*-debug.apk
           if-no-files-found: error
+
+      # Phát hành APK dưới dạng release để tải thẳng về điện thoại,
+      # không cần đăng nhập GitHub và không phải giải nén như artifact.
+      - name: Publish APK to the v1.0 release
+        if: github.ref == 'refs/heads/claude/android-document-scanner-app-q8qdma'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version="${{ steps.apk.outputs.version }}"
+          tag="v$version"
+          notes="DocScan $tag - ứng dụng quét tài liệu.
+
+          Tải file docscan-$tag-release.apk rồi mở để cài (cần cho phép cài từ nguồn không rõ).
+          Bản release được ký bằng khoá debug nên cài thử được ngay.
+
+          Build từ commit ${{ github.sha }}."
+          if gh release view "$tag" >/dev/null 2>&1; then
+            gh release upload "$tag" dist/*.apk --clobber
+            gh release edit "$tag" --notes "$notes"
+          else
+            gh release create "$tag" dist/*.apk --title "DocScan $tag" --notes "$notes"
+          fi
+          gh release view "$tag" --json assets --jq '.assets[] | "\(.name)  \(.size) bytes  \(.url)"'
