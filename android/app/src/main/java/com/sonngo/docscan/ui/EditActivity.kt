@@ -71,6 +71,9 @@ class EditActivity : AppCompatActivity() {
         binding.brightnessSlider.value = brightness.toFloat()
         binding.contrastSlider.value = contrast.toFloat()
 
+        binding.topBar.padForSystemBars(top = true)
+        binding.bottomPanel.padForSystemBars(bottom = true, extraBottomDp = 8)
+
         binding.backButton.setOnClickListener { finish() }
         binding.rotateButton.setOnClickListener { rotate() }
         binding.saveButton.setOnClickListener { save() }

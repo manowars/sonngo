@@ -74,6 +74,9 @@ class MainActivity : AppCompatActivity() {
         binding.documentList.layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
         binding.documentList.adapter = adapter
 
+        binding.scanFab.liftAboveSystemBars()
+        binding.documentList.padForSystemBars(bottom = true)
+
         binding.scanFab.setOnClickListener { startScan(null) }
         binding.toolbar.setOnMenuItemClickListener { item ->
             if (item.itemId == R.id.action_import) {

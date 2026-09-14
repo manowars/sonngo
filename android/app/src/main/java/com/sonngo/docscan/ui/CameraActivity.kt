@@ -99,6 +99,10 @@ class CameraActivity : AppCompatActivity() {
         analysisExecutor = Executors.newSingleThreadExecutor()
         documentId = intent.getStringExtra(Extras.DOCUMENT_ID)
 
+        // Chừa chỗ cho thanh trạng thái và thanh điều hướng để nút chụp không bị che.
+        binding.topBar.padForSystemBars(top = true)
+        binding.bottomBar.padForSystemBars(bottom = true, extraBottomDp = 10)
+
         binding.previewView.scaleType = PreviewView.ScaleType.FIT_CENTER
         binding.previewView.implementationMode = PreviewView.ImplementationMode.COMPATIBLE
 

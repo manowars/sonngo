@@ -35,7 +35,9 @@ class CropOverlayView @JvmOverloads constructor(
     private val corners = ArrayList<ScanPoint>()
 
     private val imageMatrix = Matrix()
-    private var imageScale = 1f
+
+    /** 0 nghĩa là chưa tính được ma trận hiển thị (chưa có ảnh hoặc chưa bố cục xong). */
+    private var imageScale = 0f
     private var imageOffsetX = 0f
     private var imageOffsetY = 0f
 
@@ -97,8 +99,10 @@ class CropOverlayView @JvmOverloads constructor(
         magnifierPaint = Paint(Paint.ANTI_ALIAS_FLAG or Paint.FILTER_BITMAP_FLAG).apply {
             shader = BitmapShader(bitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP)
         }
+        // Ảnh được tải bất đồng bộ nên onSizeChanged đã chạy xong từ trước:
+        // phải tính lại ma trận ngay tại đây, nếu không ảnh sẽ vẽ ở tỉ lệ 1:1.
+        updateMatrix()
         setQuad(quad ?: defaultQuad(bitmap))
-        requestLayout()
         invalidate()
     }
 
@@ -204,7 +208,7 @@ class CropOverlayView @JvmOverloads constructor(
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
-        if (bitmap == null || corners.size != 4) return false
+        if (bitmap == null || corners.size != 4 || imageScale <= 0f) return false
         val x = event.x
         val y = event.y
         when (event.actionMasked) {

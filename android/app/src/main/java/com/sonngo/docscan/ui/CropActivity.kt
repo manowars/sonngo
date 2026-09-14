@@ -58,6 +58,9 @@ class CropActivity : AppCompatActivity() {
         pageId = intent.getStringExtra(Extras.PAGE_ID)
         deleteSourceOnFinish = intent.getBooleanExtra(Extras.DELETE_SOURCE_ON_FINISH, false)
 
+        binding.topBar.padForSystemBars(top = true)
+        binding.bottomBar.padForSystemBars(bottom = true, extraBottomDp = 8)
+
         binding.closeButton.setOnClickListener { cancel() }
         binding.autoDetectButton.setOnClickListener { runAutoDetect(showMessage = true) }
         binding.selectAllButton.setOnClickListener { binding.cropOverlay.selectWholeImage() }

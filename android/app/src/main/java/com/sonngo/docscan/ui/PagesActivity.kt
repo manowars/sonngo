@@ -67,6 +67,10 @@ class PagesActivity : AppCompatActivity() {
         binding.pageList.adapter = adapter
         attachDragToReorder()
 
+        binding.bottomBar.padForSystemBars(bottom = true, extraBottomDp = 4)
+        binding.addPageFab.liftAboveSystemBars()
+        binding.pageList.padForSystemBars(bottom = true)
+
         binding.toolbar.setNavigationOnClickListener { finish() }
         binding.toolbar.setOnMenuItemClickListener { item ->
             when (item.itemId) {
