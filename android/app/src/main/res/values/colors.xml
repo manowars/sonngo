@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="brand_primary">#1565C0</color>
+    <color name="brand_primary_dark">#0D47A1</color>
+    <color name="brand_secondary">#00897B</color>
+    <color name="brand_on_primary">#FFFFFF</color>
+    <color name="surface_light">#FFFBFE</color>
+    <color name="camera_background">#FF101014</color>
+    <color name="scrim">#99000000</color>
+    <color name="page_placeholder">#FFE3E7EF</color>
+</resources>

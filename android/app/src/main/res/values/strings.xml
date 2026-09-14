@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">DocScan</string>
+
+    <string name="documents_title">Tài liệu đã quét</string>
+    <string name="empty_title">Chưa có tài liệu nào</string>
+    <string name="empty_message">Nhấn nút Quét để chụp trang đầu tiên. Ứng dụng sẽ tự nhận diện khung giấy và nắn thẳng ảnh.</string>
+    <string name="action_scan">Quét</string>
+    <string name="action_import">Chọn ảnh từ máy</string>
+    <string name="action_rename">Đổi tên</string>
+    <string name="action_delete">Xoá</string>
+    <string name="action_share_pdf">Chia sẻ PDF</string>
+    <string name="action_share_images">Chia sẻ ảnh</string>
+    <string name="action_save_gallery">Lưu vào thư viện ảnh</string>
+    <string name="action_export_pdf">Xuất PDF</string>
+    <string name="action_cancel">Huỷ</string>
+    <string name="action_ok">Đồng ý</string>
+    <string name="action_done">Xong</string>
+    <string name="action_next">Tiếp tục</string>
+    <string name="action_save">Lưu</string>
+    <string name="action_retake">Chụp lại</string>
+    <string name="action_add_page">Thêm trang</string>
+    <string name="action_auto_detect">Tự nhận diện</string>
+    <string name="action_select_all">Chọn cả ảnh</string>
+    <string name="action_rotate_left">Xoay trái</string>
+    <string name="action_rotate_right">Xoay phải</string>
+    <string name="action_replace_page">Chỉnh sửa lại</string>
+    <string name="action_move_up">Chuyển lên</string>
+    <string name="action_move_down">Chuyển xuống</string>
+
+    <string name="camera_permission_title">Cần quyền máy ảnh</string>
+    <string name="camera_permission_message">Ứng dụng cần quyền máy ảnh để quét tài liệu.</string>
+    <string name="camera_permission_denied">Không có quyền máy ảnh nên không thể quét.</string>
+    <string name="camera_error">Không mở được máy ảnh.</string>
+    <string name="capture_error">Chụp ảnh thất bại.</string>
+    <string name="camera_hint">Đưa toàn bộ trang giấy vào khung hình</string>
+    <string name="camera_auto_on">Tự động chụp: Bật</string>
+    <string name="camera_auto_off">Tự động chụp: Tắt</string>
+    <string name="camera_flash">Đèn flash</string>
+    <string name="camera_shutter">Chụp</string>
+    <string name="camera_grid">Lưới canh khung</string>
+
+    <string name="crop_title">Chỉnh khung tài liệu</string>
+    <string name="crop_hint">Kéo 4 góc để khớp mép giấy</string>
+    <string name="crop_detect_failed">Không nhận diện được khung, hãy kéo tay các góc.</string>
+    <string name="crop_invalid">Khung cắt không hợp lệ, hãy chỉnh lại các góc.</string>
+
+    <string name="edit_title">Chỉnh sửa ảnh scan</string>
+    <string name="filter_original">Gốc</string>
+    <string name="filter_magic">Làm nét</string>
+    <string name="filter_grayscale">Xám</string>
+    <string name="filter_black_white">Đen trắng</string>
+    <string name="filter_soft">Dịu</string>
+    <string name="label_brightness">Độ sáng</string>
+    <string name="label_contrast">Tương phản</string>
+    <string name="processing">Đang xử lý…</string>
+
+    <string name="pages_count">%1$d trang</string>
+    <string name="page_index">Trang %1$d</string>
+    <string name="rename_hint">Tên tài liệu</string>
+    <string name="delete_document_title">Xoá tài liệu?</string>
+    <string name="delete_document_message">Toàn bộ trang trong tài liệu sẽ bị xoá vĩnh viễn.</string>
+    <string name="delete_page_title">Xoá trang này?</string>
+    <string name="saved_to_gallery">Đã lưu %1$d ảnh vào thư viện</string>
+    <string name="save_gallery_failed">Không lưu được vào thư viện ảnh</string>
+    <string name="export_failed">Xuất file thất bại</string>
+    <string name="no_pages">Tài liệu chưa có trang nào</string>
+    <string name="import_failed">Không đọc được ảnh đã chọn</string>
+    <string name="page_saved">Đã lưu trang</string>
+
+    <string name="cd_document_thumbnail">Ảnh thu nhỏ của tài liệu</string>
+    <string name="cd_page_thumbnail">Ảnh thu nhỏ của trang</string>
+    <string name="cd_close">Đóng</string>
+    <string name="cd_back">Quay lại</string>
+    <string name="cd_more">Thêm tuỳ chọn</string>
+    <string name="cd_preview">Xem trước ảnh scan</string>
+</resources>
