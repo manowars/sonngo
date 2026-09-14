@@ -1,6 +1,5 @@
 package com.sonngo.docscan.scan
 
-import android.graphics.PointF
 import kotlin.math.abs
 import kotlin.math.hypot
 import kotlin.math.max
@@ -9,9 +8,9 @@ import kotlin.math.max
  * Tứ giác 4 đỉnh mô tả khung tài liệu, luôn được sắp theo thứ tự
  * trái-trên, phải-trên, phải-dưới, trái-dưới.
  */
-class Quad(points: List<PointF>) {
+class Quad(points: List<ScanPoint>) {
 
-    val points: List<PointF> = order(points)
+    val points: List<ScanPoint> = order(points)
 
     val topLeft get() = points[0]
     val topRight get() = points[1]
@@ -39,7 +38,7 @@ class Quad(points: List<PointF>) {
         get() = max(dist(topLeft, bottomLeft), dist(topRight, bottomRight))
 
     fun scaled(factorX: Float, factorY: Float): Quad =
-        Quad(points.map { PointF(it.x * factorX, it.y * factorY) })
+        Quad(points.map { ScanPoint(it.x * factorX, it.y * factorY) })
 
     fun toFloatArray(): FloatArray {
         val out = FloatArray(8)
@@ -95,26 +94,26 @@ class Quad(points: List<PointF>) {
 
     companion object {
 
-        fun dist(a: PointF, b: PointF): Float = hypot(b.x - a.x, b.y - a.y)
+        fun dist(a: ScanPoint, b: ScanPoint): Float = hypot(b.x - a.x, b.y - a.y)
 
         fun fullFrame(width: Float, height: Float): Quad = Quad(
             listOf(
-                PointF(0f, 0f),
-                PointF(width, 0f),
-                PointF(width, height),
-                PointF(0f, height)
+                ScanPoint(0f, 0f),
+                ScanPoint(width, 0f),
+                ScanPoint(width, height),
+                ScanPoint(0f, height)
             )
         )
 
         fun fromFloatArray(values: FloatArray): Quad? {
             if (values.size < 8) return null
-            return Quad((0 until 4).map { PointF(values[it * 2], values[it * 2 + 1]) })
+            return Quad((0 until 4).map { ScanPoint(values[it * 2], values[it * 2 + 1]) })
         }
 
         /**
          * Sắp xếp 4 điểm bất kỳ về thứ tự TL, TR, BR, BL bằng cách so sánh với tâm.
          */
-        private fun order(input: List<PointF>): List<PointF> {
+        private fun order(input: List<ScanPoint>): List<ScanPoint> {
             require(input.size == 4) { "Quad cần đúng 4 điểm" }
             val cx = input.sumOf { it.x.toDouble() }.toFloat() / 4f
             val cy = input.sumOf { it.y.toDouble() }.toFloat() / 4f

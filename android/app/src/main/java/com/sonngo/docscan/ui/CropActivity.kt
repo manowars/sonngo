@@ -3,7 +3,6 @@ package com.sonngo.docscan.ui
 import android.app.Activity
 import android.content.Intent
 import android.graphics.Bitmap
-import android.graphics.PointF
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
@@ -17,6 +16,7 @@ import com.sonngo.docscan.scan.BitmapIO
 import com.sonngo.docscan.scan.EdgeDetector
 import com.sonngo.docscan.scan.PerspectiveTransform
 import com.sonngo.docscan.scan.Quad
+import com.sonngo.docscan.scan.ScanPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -132,9 +132,9 @@ class CropActivity : AppCompatActivity() {
         if (normalized == 0) return quad
         val points = quad.points.map { point ->
             when (normalized) {
-                90 -> PointF(height - point.y, point.x)
-                180 -> PointF(width - point.x, height - point.y)
-                else -> PointF(point.y, width - point.x)
+                90 -> ScanPoint(height - point.y, point.x)
+                180 -> ScanPoint(width - point.x, height - point.y)
+                else -> ScanPoint(point.y, width - point.x)
             }
         }
         return Quad(points)

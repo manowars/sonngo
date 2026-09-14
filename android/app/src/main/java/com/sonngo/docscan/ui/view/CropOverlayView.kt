@@ -15,6 +15,7 @@ import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
 import com.sonngo.docscan.scan.Quad
+import com.sonngo.docscan.scan.ScanPoint
 import kotlin.math.hypot
 import kotlin.math.min
 
@@ -31,7 +32,7 @@ class CropOverlayView @JvmOverloads constructor(
     private var bitmap: Bitmap? = null
 
     /** 4 góc lưu theo toạ độ ảnh gốc. */
-    private val corners = ArrayList<PointF>()
+    private val corners = ArrayList<ScanPoint>()
 
     private val imageMatrix = Matrix()
     private var imageScale = 1f
@@ -103,7 +104,7 @@ class CropOverlayView @JvmOverloads constructor(
 
     fun setQuad(quad: Quad) {
         corners.clear()
-        quad.points.forEach { corners.add(PointF(it.x, it.y)) }
+        quad.points.forEach { corners.add(ScanPoint(it.x, it.y)) }
         invalidate()
         onQuadChanged?.invoke(currentQuad())
     }
@@ -113,17 +114,17 @@ class CropOverlayView @JvmOverloads constructor(
         setQuad(Quad.fullFrame(bmp.width.toFloat(), bmp.height.toFloat()))
     }
 
-    fun currentQuad(): Quad = Quad(corners.map { PointF(it.x, it.y) })
+    fun currentQuad(): Quad = Quad(corners.map { ScanPoint(it.x, it.y) })
 
     private fun defaultQuad(bitmap: Bitmap): Quad {
         val insetX = bitmap.width * 0.1f
         val insetY = bitmap.height * 0.1f
         return Quad(
             listOf(
-                PointF(insetX, insetY),
-                PointF(bitmap.width - insetX, insetY),
-                PointF(bitmap.width - insetX, bitmap.height - insetY),
-                PointF(insetX, bitmap.height - insetY)
+                ScanPoint(insetX, insetY),
+                ScanPoint(bitmap.width - insetX, insetY),
+                ScanPoint(bitmap.width - insetX, bitmap.height - insetY),
+                ScanPoint(insetX, bitmap.height - insetY)
             )
         )
     }
@@ -144,7 +145,7 @@ class CropOverlayView @JvmOverloads constructor(
         imageMatrix.postTranslate(imageOffsetX, imageOffsetY)
     }
 
-    private fun toView(point: PointF) =
+    private fun toView(point: ScanPoint) =
         PointF(point.x * imageScale + imageOffsetX, point.y * imageScale + imageOffsetY)
 
     private fun toImage(x: Float, y: Float) =

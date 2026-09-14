@@ -23,12 +23,16 @@ không gọi dịch vụ đám mây, không cần Google Play Services.
 
 1. Hạ ảnh xuống cạnh dài 360 px và chuyển sang ảnh xám (`GrayImage`).
 2. Làm mờ Gauss 5×5, tính gradient Sobel.
-3. Tách biên kiểu Canny: triệt tiêu phi cực đại, ngưỡng kép lấy theo phân vị 93%, lan truyền trễ.
+3. Tách biên kiểu Canny: triệt tiêu phi cực đại, ngưỡng kép lấy theo **phân vị 80%**, lan truyền trễ.
+   Phân vị cao hơn khiến chữ trong trang lấn át mép giấy và làm trượt khung — điều này được
+   phát hiện bằng kiểm thử và đã hiệu chỉnh.
 4. Giãn nở 3×3 để nối các đoạn biên đứt.
 5. Truy vết đường bao bằng Moore-neighbor, rút gọn bằng Douglas-Peucker.
 6. Giữ đa giác 4 đỉnh, lồi, góc trong khoảng 60°–120°, diện tích ≥ 12% khung hình.
-7. Nếu đường bao đứt quá nhiều: dự phòng bằng biến đổi Hough, lấy 2 đường ngang
-   và 2 đường dọc mạnh nhất rồi giao nhau thành tứ giác.
+7. Nếu chưa ra khung: làm mờ thêm một lần rồi lặp lại (ảnh nhiễu mạnh cần mức này,
+   ảnh nhiều chữ lại cần mức nhẹ) — chỉ tính khi thật sự cần.
+8. Vẫn chưa ra: dự phòng bằng biến đổi Hough, lấy 2 đường ngang và 2 đường dọc
+   mạnh nhất rồi giao nhau thành tứ giác.
 
 Ảnh được nắn thẳng bằng `Matrix.setPolyToPoly` (biến đổi phối cảnh chạy bằng mã máy nên rất nhanh).
 
@@ -40,6 +44,21 @@ Mã nguồn liên quan:
 - `scan/ImageFilters.kt` — bộ lọc ảnh scan
 - `ui/view/EdgeOverlayView.kt` — vẽ khung trên preview
 - `ui/view/CropOverlayView.kt` — kéo góc kèm kính lúp
+- `scan/ScanPoint.kt` — điểm 2D riêng, giúp phần thuật toán chạy và kiểm thử được trên JVM
+
+## Kiểm thử
+
+`app/src/test/java/.../EdgeDetectorTest.kt` dựng ảnh tổng hợp rồi đối chiếu 4 góc
+tìm được với toạ độ thật: giấy đặt thẳng, nghiêng phối cảnh, nằm ngang, gần kín khung,
+nền ít tương phản, trang đầy chữ, có bóng đổ, nhiễu rất mạnh, nền bàn lộn xộn — kèm
+hai trường hợp âm (ảnh đồng màu và ảnh chỉ có nhiễu phải trả về `null`).
+
+Sai số góc đo được đều dưới 3 px trên ảnh phân tích 360x480, thời gian dò khoảng
+35 ms mỗi khung trên JVM máy tính.
+
+```bash
+cd android && ./gradlew testDebugUnitTest
+```
 
 ## Yêu cầu
 

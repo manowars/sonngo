@@ -1,7 +1,6 @@
 package com.sonngo.docscan.scan
 
 import android.graphics.Bitmap
-import android.graphics.PointF
 import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.hypot
@@ -21,6 +20,15 @@ object EdgeDetector {
     /** Cạnh dài nhất của ảnh dùng để phân tích; đủ nhỏ để chạy realtime. */
     const val WORK_SIZE = 360
 
+    /**
+     * Ngưỡng trên của Canny lấy theo phân vị này của biên độ gradient.
+     * Phân vị cao hơn (0.9+) khiến chữ trong trang lấn át mép giấy và bỏ sót khung.
+     */
+    private const val EDGE_PERCENTILE = 0.80f
+
+    /** Các mức làm mờ Gauss được thử lần lượt. */
+    private val BLUR_LEVELS = intArrayOf(1, 2)
+
     private const val MIN_AREA_RATIO = 0.12f
     private const val MAX_AREA_RATIO = 0.995f
 
@@ -34,11 +42,25 @@ object EdgeDetector {
      * Trả về khung tài liệu theo toạ độ của chính [gray], hoặc null nếu không tìm thấy.
      */
     fun detect(gray: GrayImage): Quad? {
-        val blurred = gray.gaussianBlur()
-        val sobel = blurred.sobel()
-        val edges = cannyEdges(sobel)
-        fromContours(edges, gray.width, gray.height)?.let { return it }
-        return fromHoughLines(edges, gray.width, gray.height)
+        // Ảnh nhiều chữ cần ít làm mờ để mép giấy không bị nuốt mất, còn ảnh nhiễu
+        // mạnh lại cần làm mờ thêm. Thử lần lượt từng mức, chỉ tính mức sau khi cần.
+        val edgeMaps = ArrayList<ByteArray>(BLUR_LEVELS.size)
+        for (passes in BLUR_LEVELS) {
+            val edges = cannyEdges(blur(gray, passes).sobel())
+            edgeMaps.add(edges)
+            fromContours(edges, gray.width, gray.height)?.let { return it }
+        }
+        // Đường bao đứt đoạn thì chuyển sang tìm 4 đường thẳng mạnh nhất.
+        for (edges in edgeMaps) {
+            fromHoughLines(edges, gray.width, gray.height)?.let { return it }
+        }
+        return null
+    }
+
+    private fun blur(gray: GrayImage, passes: Int): GrayImage {
+        var result = gray.gaussianBlur()
+        repeat(passes - 1) { result = result.gaussianBlur() }
+        return result
     }
 
     // ----------------------------------------------------------------------
@@ -66,7 +88,7 @@ object EdgeDetector {
             }
         }
 
-        val high = percentile(suppressed, 0.93f).coerceAtLeast(36)
+        val high = percentile(suppressed, EDGE_PERCENTILE).coerceAtLeast(36)
         val low = max(12, (high * 0.4f).roundToInt())
 
         val edges = ByteArray(w * h)
@@ -180,9 +202,9 @@ object EdgeDetector {
     /**
      * Truy vết đường bao ngoài theo thuật toán Moore-neighbor.
      */
-    private fun traceContours(edges: ByteArray, w: Int, h: Int): List<List<PointF>> {
+    private fun traceContours(edges: ByteArray, w: Int, h: Int): List<List<ScanPoint>> {
         val visited = BooleanArray(w * h)
-        val contours = ArrayList<List<PointF>>()
+        val contours = ArrayList<List<ScanPoint>>()
         val maxSteps = w * h * 4
 
         for (y in 0 until h) {
@@ -191,7 +213,7 @@ object EdgeDetector {
                 if (edges[start].toInt() != 1 || visited[start]) continue
                 if (y > 0 && edges[start - w].toInt() == 1) continue
 
-                val points = ArrayList<PointF>()
+                val points = ArrayList<ScanPoint>()
                 var cx = x
                 var cy = y
                 var searchFrom = 7 // bắt đầu quét ngay sau hướng Bắc
@@ -201,7 +223,7 @@ object EdgeDetector {
 
                 while (steps < maxSteps) {
                     visited[cy * w + cx] = true
-                    points.add(PointF(cx.toFloat(), cy.toFloat()))
+                    points.add(ScanPoint(cx.toFloat(), cy.toFloat()))
                     var moved = false
                     for (k in 0 until 8) {
                         val dir = (searchFrom + k) % 8
@@ -229,7 +251,7 @@ object EdgeDetector {
         return contours
     }
 
-    private fun perimeterOf(points: List<PointF>): Float {
+    private fun perimeterOf(points: List<ScanPoint>): Float {
         var sum = 0f
         for (i in points.indices) {
             val a = points[i]
@@ -240,7 +262,7 @@ object EdgeDetector {
     }
 
     /** Rút gọn đa giác khép kín bằng Douglas-Peucker. */
-    private fun douglasPeucker(points: List<PointF>, epsilon: Float): List<PointF> {
+    private fun douglasPeucker(points: List<ScanPoint>, epsilon: Float): List<ScanPoint> {
         if (points.size < 4) return points
         val anchor = points[0]
         var farIndex = 0
@@ -254,7 +276,7 @@ object EdgeDetector {
         }
         val first = simplifySegment(points.subList(0, farIndex + 1), epsilon)
         val second = simplifySegment(points.subList(farIndex, points.size), epsilon)
-        val result = ArrayList<PointF>(first.size + second.size)
+        val result = ArrayList<ScanPoint>(first.size + second.size)
         result.addAll(first)
         // Bỏ điểm đầu của nhánh sau vì trùng điểm cuối nhánh trước.
         result.addAll(second.subList(1, second.size))
@@ -266,7 +288,7 @@ object EdgeDetector {
         return result
     }
 
-    private fun simplifySegment(points: List<PointF>, epsilon: Float): List<PointF> {
+    private fun simplifySegment(points: List<ScanPoint>, epsilon: Float): List<ScanPoint> {
         if (points.size < 3) return points.toList()
         val start = points.first()
         val end = points.last()
@@ -282,7 +304,7 @@ object EdgeDetector {
         return if (maxDist > epsilon) {
             val left = simplifySegment(points.subList(0, index + 1), epsilon)
             val right = simplifySegment(points.subList(index, points.size), epsilon)
-            val merged = ArrayList<PointF>(left.size + right.size)
+            val merged = ArrayList<ScanPoint>(left.size + right.size)
             merged.addAll(left)
             merged.addAll(right.subList(1, right.size))
             merged
@@ -291,7 +313,7 @@ object EdgeDetector {
         }
     }
 
-    private fun pointLineDistance(p: PointF, a: PointF, b: PointF): Float {
+    private fun pointLineDistance(p: ScanPoint, a: ScanPoint, b: ScanPoint): Float {
         val dx = b.x - a.x
         val dy = b.y - a.y
         val len = hypot(dx, dy)
@@ -374,7 +396,7 @@ object EdgeDetector {
         if (points.any { it.x < -margin || it.y < -margin || it.x > w + margin || it.y > h + margin }) return null
 
         val clamped = points.map {
-            PointF(it.x.coerceIn(0f, w.toFloat()), it.y.coerceIn(0f, h.toFloat()))
+            ScanPoint(it.x.coerceIn(0f, w.toFloat()), it.y.coerceIn(0f, h.toFloat()))
         }
         val quad = Quad(clamped)
         val ratio = quad.area / (w * h).toFloat()
@@ -383,7 +405,7 @@ object EdgeDetector {
         return quad
     }
 
-    private fun intersect(a: Line, b: Line): PointF? {
+    private fun intersect(a: Line, b: Line): ScanPoint? {
         val cosA = cos(a.theta.toDouble())
         val sinA = sin(a.theta.toDouble())
         val cosB = cos(b.theta.toDouble())
@@ -392,6 +414,6 @@ object EdgeDetector {
         if (abs(det) < 1e-6) return null
         val x = (a.rho * sinB - b.rho * sinA) / det
         val y = (b.rho * cosA - a.rho * cosB) / det
-        return PointF(x.toFloat(), y.toFloat())
+        return ScanPoint(x.toFloat(), y.toFloat())
     }
 }
