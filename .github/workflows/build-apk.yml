@@ -2,11 +2,6 @@ name: Build LinkNotes APK
 
 on:
   workflow_dispatch:
-    inputs:
-      release:
-        description: 'Also attach the APK to a GitHub Release'
-        type: boolean
-        default: false
   push:
     paths:
       - 'linknotes/web/**'
@@ -35,7 +30,18 @@ jobs:
           distribution: temurin
           java-version: 21
 
-      - uses: android-actions/setup-android@v3
+      # The ubuntu-latest image already ships the Android SDK, so there is
+      # nothing to install beyond the platform this project compiles against.
+      # (android-actions/setup-android fails here: it installs the obsolete
+      # "tools" package, which Google removed from the SDK repository.)
+      - name: Prepare Android SDK
+        run: |
+          set -euo pipefail
+          SDKMANAGER="$(find "$ANDROID_HOME/cmdline-tools" -name sdkmanager -type f | sort | tail -1)"
+          echo "sdkmanager: $SDKMANAGER"
+          yes | "$SDKMANAGER" --licenses > /dev/null 2>&1 || true
+          "$SDKMANAGER" "platform-tools" "platforms;android-36" "build-tools;36.0.0"
+          "$SDKMANAGER" --list_installed
 
       - name: Install Capacitor
         run: npm install --no-audit --no-fund
@@ -71,15 +77,21 @@ jobs:
           if-no-files-found: error
           retention-days: 90
 
+      # Actions artifacts need a login and arrive as a zip, which is awkward
+      # to install from a phone. A release gives a direct .apk link.
       - name: Publish a release
-        if: github.event_name == 'workflow_dispatch' && inputs.release
+        if: success()
         uses: softprops/action-gh-release@v2
         with:
           tag_name: linknotes-${{ github.run_number }}
           name: LinkNotes build ${{ github.run_number }}
+          prerelease: true
           body: |
-            Debug APK built from `${{ github.sha }}`.
+            APK debug, build từ `${{ github.sha }}`.
 
-            Cài đặt: tải file `.apk`, mở trên điện thoại, cho phép
-            "Cài ứng dụng không rõ nguồn gốc" khi Android hỏi.
+            Cài đặt: mở link `.apk` bên dưới **bằng trình duyệt trên điện thoại**,
+            tải về rồi mở file, cho phép "Cài ứng dụng không rõ nguồn gốc" khi
+            Android hỏi.
+
+            Bản debug ký bằng khoá debug — đủ để tự cài, không đưa lên Play Store được.
           files: linknotes/android/${{ steps.name.outputs.file }}

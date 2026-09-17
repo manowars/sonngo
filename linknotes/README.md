@@ -81,11 +81,14 @@ lưu và phân loại ngay.
 
 Repo có sẵn workflow `.github/workflows/build-apk.yml`:
 
-GitHub → tab **Actions** → **Build LinkNotes APK** → **Run workflow**
-(bật `release` nếu muốn file được đính vào một GitHub Release).
+Mỗi lần đẩy thay đổi trong `linknotes/` là workflow tự build; muốn chạy tay thì
+GitHub → tab **Actions** → **Build LinkNotes APK** → **Run workflow**.
 
-Build xong tải `.apk` ở mục Artifacts, chép sang điện thoại, mở, cho phép "Cài
-ứng dụng từ nguồn không xác định". APK cũng nhận Share intent như PWA.
+Build xong, file `.apk` được đăng luôn vào
+[Releases](https://github.com/manowars/sonngo/releases) — mở link đó **bằng
+trình duyệt trên điện thoại**, tải về, mở file, cho phép "Cài ứng dụng từ nguồn
+không xác định". (Bản trong mục Artifacts của Actions cũng có, nhưng phải đăng
+nhập và tải về dạng zip.) APK nhận Share intent như PWA.
 
 Muốn build tại máy (cần Android SDK + JDK 21):
 
