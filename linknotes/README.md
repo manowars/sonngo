@@ -78,6 +78,12 @@ xuất hiện trong menu Share** của mọi app khác.
 Từ đó: trong Chrome/YouTube/Facebook bấm Share → chọn **LinkNotes** → link được
 lưu và phân loại ngay.
 
+> **APK và web là hai kho cấu hình riêng.** APK chạy ở origin `https://localhost`
+> của WebView, còn site Netlify ở tên miền của bạn — trình duyệt coi đó là hai
+> nơi khác nhau, nên token và note lưu trong máy **không dùng chung**. Cài APK
+> thì phải điền GitHub trong ⚙️ của chính APK. Cả hai vẫn đồng bộ về cùng một
+> repo, nên dữ liệu vẫn gặp nhau ở đó.
+
 ### Cách B — file APK thật
 
 Repo có sẵn workflow `.github/workflows/build-apk.yml`:
@@ -204,6 +210,28 @@ Rồi nhờ Claude Code, ví dụ:
 - Ghi file dùng `sha` của GitHub; nếu đụng độ thì tự đọc lại và thử lại một lần.
 - Hai thiết bị sửa cùng lúc → không mất dữ liệu, chỉ có trường bị ghi đè theo
   bản mới hơn. (Đã kiểm thử hai "thiết bị" chạy song song.)
+
+## Không thấy note đâu?
+
+Theo thứ tự này:
+
+1. **Mở app trên điện thoại.** Có dải cảnh báo màu vàng/đỏ ở đầu màn hình không?
+   - *"… chỉ nằm trên máy này — chưa kết nối GitHub"* → chưa làm bước 1–2 ở trên:
+     chưa có repo note, hoặc chưa điền ⚙️. Note vẫn còn nguyên, bấm **Kết nối**.
+   - *"Đồng bộ lỗi: …"* → thường là token hết hạn, sai repo, hoặc token không có
+     quyền `Contents: Read and write`.
+   - *"N note chưa lên GitHub"* → bấm **Đồng bộ**.
+2. **Dùng APK?** Xem khung nhắc ở mục cài đặt Android bên trên — APK có kho cấu
+   hình riêng, phải điền GitHub lần nữa trong ⚙️ của APK.
+3. **Xem thẳng trên GitHub.** Vào `<repo note>/linknotes/data/` — phải thấy file
+   `YYYY-MM.json` của tháng này. Không thấy thì note chưa hề rời khỏi điện thoại,
+   và dashboard hiển thị trống là đúng.
+4. **Dashboard báo gì?** Nếu nó nói *"Kho note đang trống"* thì nó đã kết nối
+   được nhưng repo chưa có dữ liệu. Nếu có dải đỏ *"Không tải lại được…"* thì nó
+   đang hiện bản lưu cũ và báo rõ lỗi.
+
+App và dashboard đều gọi GitHub với `cache: no-store`, nên không có chuyện phải
+chờ trình duyệt hết cache (GitHub trả `max-age=60` cho request có token).
 
 ## Quyền riêng tư
 

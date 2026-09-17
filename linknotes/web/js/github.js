@@ -30,6 +30,9 @@ export function isConfigured(s = state.settings) {
 async function api(path, options = {}) {
   const { token } = state.settings;
   const res = await fetch(`${API}${path}`, {
+    // GitHub answers authenticated reads with `Cache-Control: private,
+    // max-age=60`, so without this a note pushed seconds ago stays invisible.
+    cache: 'no-store',
     ...options,
     headers: {
       Accept: 'application/vnd.github+json',
