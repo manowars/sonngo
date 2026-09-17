@@ -25,6 +25,9 @@ export function isConfigured(s = settings()) {
 
 async function api(path, token) {
   const res = await fetch(`${API}${path}`, {
+    // GitHub sends `Cache-Control: private, max-age=60` on authenticated
+    // reads; without this the dashboard can show a minute-old repository.
+    cache: 'no-store',
     headers: {
       Accept: 'application/vnd.github+json',
       'X-GitHub-Api-Version': '2022-11-28',

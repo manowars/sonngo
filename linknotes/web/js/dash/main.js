@@ -94,6 +94,33 @@ function render() {
     ? `${data.source} · tải lúc ${new Date(data.pulledAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}`
     : '';
 
+  const hint = $('emptyHint');
+  if (!data.items.length) {
+    hint.hidden = false;
+    hint.textContent = '';
+    const p = document.createElement('p');
+    p.style.margin = '0';
+    const b = document.createElement('b');
+    b.textContent = 'Kho note đang trống.';
+    p.append(b, document.createTextNode(
+      ' Không có file YYYY-MM.json nào trong thư mục dữ liệu, nên chưa có gì để vẽ.'
+      + ' Thường là vì điện thoại chưa đẩy note lên:'));
+    const ol = document.createElement('ol');
+    for (const step of [
+      'Mở app ghi link trên điện thoại và xem thanh cảnh báo / nút đồng bộ ở đầu màn hình.',
+      'Nếu đó là APK: APK chạy ở một origin riêng, không dùng chung cấu hình với web — phải điền GitHub trong ⚙️ của chính APK.',
+      'Kiểm tra repo, branch và thư mục dữ liệu ở đây khớp với cấu hình trong app.',
+    ]) {
+      const li = document.createElement('li');
+      li.textContent = step;
+      ol.appendChild(li);
+    }
+    p.appendChild(ol);
+    hint.appendChild(p);
+  } else {
+    hint.hidden = true;
+  }
+
   renderHeroAndKpis(rangeMeta);
   renderTrend(rangeMeta);
   renderCalendar(rangeMeta);
@@ -417,6 +444,14 @@ function buildFilterControls() {
   for (const k of [...new Set(data.items.map((i) => i.kind))].filter(Boolean).sort()) {
     kindSel.append(mkOption(k, (KIND_META[k] || KIND_META.link).label));
   }
+
+  // Rebuilding the options resets the control, so re-apply the active filter —
+  // and drop it if the new dataset no longer offers that value.
+  if (![...topicSel.options].some((o) => o.value === ui.topic)) ui.topic = 'all';
+  if (![...kindSel.options].some((o) => o.value === ui.kind)) ui.kind = 'all';
+  topicSel.value = ui.topic;
+  kindSel.value = ui.kind;
+  $('fSearch').value = ui.query;
 }
 
 function wire() {
@@ -468,6 +503,7 @@ function wire() {
   });
 
   $('btnRefresh').addEventListener('click', () => refresh(true));
+  $('staleRetry').addEventListener('click', () => refresh(true));
 
   // Charts are drawn at the container's pixel width, so a resize needs a redraw.
   let resizeTimer = null;
@@ -525,6 +561,17 @@ async function readFiles(files) {
 
 /* ---------------- boot ---------------- */
 
+// A failed refresh leaves the previous pull on screen; without this the
+// dashboard is indistinguishable from one that is simply up to date.
+function showStale(msg) {
+  const bar = $('staleBar');
+  bar.hidden = !msg;
+  if (!msg) return;
+  const when = data && data.pulledAt
+    ? new Date(data.pulledAt).toLocaleString('vi-VN') : 'trước đó';
+  $('staleText').textContent = `Không tải lại được từ GitHub: ${msg} — đang hiển thị bản đã lưu lúc ${when}.`;
+}
+
 function showSetupError(msg) {
   const el = $('setupErr');
   el.textContent = msg;
@@ -563,12 +610,13 @@ async function refresh(explicit) {
   try {
     data = await pullFromGitHub();
     showSetupError('');
+    showStale('');
     showDashboard();
     if (explicit) toast(`Đã tải ${data.items.length} link`);
     return true;
   } catch (err) {
     showSetupError(err.message);
-    if (data) toast(err.message); else showSetup();
+    if (data) showStale(err.message); else showSetup();
     return false;
   } finally {
     btn.disabled = false;

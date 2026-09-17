@@ -37,6 +37,8 @@ function render() {
   renderList($('list'), groupNotes(filtered, ui.groupBy, state.topics), state.topics, notes.length);
   renderStats($('stats'), notes, state.topics, state.lastSync);
 
+  renderBanner(notes);
+
   const pill = $('syncPill');
   pill.dataset.status = state.syncStatus;
   const pending = notes.filter((n) => n.dirty).length;
@@ -45,6 +47,47 @@ function render() {
     + (pending ? ` · ${pending} chờ` : '');
 }
 subscribe(render);
+
+// Notes that live only on this device are the single most confusing state in
+// the app — you save something, and nothing downstream ever sees it. Say so
+// plainly instead of leaving a small number in the header pill.
+function renderBanner(notes) {
+  const banner = $('banner');
+  const pending = notes.filter((n) => n.dirty).length;
+  const configured = isConfigured();
+
+  let tone = 'warn';
+  let text = '';
+  let action = '';
+  let onAction = null;
+
+  if (!configured && notes.length) {
+    text = `${pending || notes.length} note mới chỉ nằm trên máy này — chưa kết nối GitHub nên máy tính và dashboard không thấy được.`;
+    action = 'Kết nối';
+    onAction = openSettings;
+  } else if (configured && state.syncStatus === 'error') {
+    tone = 'error';
+    text = `Đồng bộ lỗi: ${state.syncMessage}${pending ? ` · ${pending} note đang chờ.` : ''}`;
+    action = 'Thử lại';
+    onAction = () => sync();
+  } else if (configured && pending && !navigator.onLine) {
+    text = `Đang offline · ${pending} note sẽ tự đẩy lên khi có mạng.`;
+    action = 'Thử lại';
+    onAction = () => sync();
+  } else if (configured && pending && state.syncStatus !== 'syncing') {
+    text = `${pending} note chưa lên GitHub.`;
+    action = 'Đồng bộ';
+    onAction = () => sync();
+  }
+
+  banner.hidden = !text;
+  if (!text) return;
+  banner.dataset.tone = tone;
+  $('bannerText').textContent = text;
+  const btn = $('bannerAction');
+  btn.textContent = action;
+  btn.onclick = onAction;
+}
 
 /* ---------------- metadata ---------------- */
 async function fetchMeta(url) {
