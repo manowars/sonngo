@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>LinkNotes</title>
+<meta name="description" content="Ghi nhanh link hay trên điện thoại, tự phân loại theo ngày / topic / loại, đồng bộ về máy tính qua GitHub.">
+<meta name="theme-color" content="#2563eb">
+<meta name="color-scheme" content="light dark">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="app.css">
+<script>
+  // Defined before the bundle loads so the Android share intent (which may fire
+  // during cold start) never lands on an undefined function.
+  window.__shareQueue = [];
+  window.__linknotesShare = function (text, subject, token) {
+    window.__shareQueue.push({ text: text, subject: subject, token: token });
+    if (window.__onShare) window.__onShare();
+  };
+  (function () {
+    try {
+      var s = JSON.parse(localStorage.getItem('linknotes.settings') || '{}');
+      if (s.theme === 'dark' || s.theme === 'light') {
+        document.documentElement.dataset.theme = s.theme;
+      }
+    } catch (e) { /* private mode */ }
+  })();
+</script>
+</head>
+<body>
+<div class="app">
+  <header class="topbar" id="topbar">
+    <div class="topbar-row">
+      <div class="brand"><span class="dot">🔗</span> LinkNotes</div>
+      <button class="sync-pill" id="syncPill" data-status="idle" title="Đồng bộ ngay">
+        <span class="led"></span><span id="syncText">Chưa đồng bộ</span>
+      </button>
+      <a class="icon-btn" href="dashboard.html" aria-label="Dashboard tổng hợp" title="Dashboard tổng hợp">📊</a>
+      <button class="icon-btn" id="btnSettings" aria-label="Cài đặt">⚙️</button>
+    </div>
+    <form class="quickadd" id="quickForm">
+      <input id="quickInput" type="text" inputmode="url" autocomplete="off"
+             placeholder="Dán link hoặc gõ ghi chú #tag…" aria-label="Thêm link nhanh">
+      <button class="btn" type="submit">Lưu</button>
+    </form>
+  </header>
+
+  <nav class="chips" id="filterChips" aria-label="Bộ lọc"></nav>
+
+  <div class="toolbar">
+    <input class="search" id="searchInput" type="search" placeholder="Tìm trong link, tiêu đề, ghi chú…" aria-label="Tìm kiếm">
+    <select id="groupBy" aria-label="Nhóm theo">
+      <option value="date">Theo ngày</option>
+      <option value="topic">Theo topic</option>
+      <option value="kind">Theo loại</option>
+      <option value="domain">Theo nguồn</option>
+    </select>
+  </div>
+
+  <main id="list" aria-live="polite"></main>
+</div>
+
+<button class="fab" id="fab" aria-label="Thêm link chi tiết">＋</button>
+<div class="toast" id="toast" role="status"></div>
+
+<dialog class="sheet" id="editSheet">
+  <form method="dialog" class="sheet-inner" id="editForm">
+    <div class="sheet-head">
+      <h2 id="editTitle">Link mới</h2>
+      <button class="icon-btn" type="button" data-close>✕</button>
+    </div>
+    <div class="field">
+      <label for="fUrl">Link</label>
+      <input id="fUrl" type="text" inputmode="url" placeholder="https://…">
+    </div>
+    <div class="field">
+      <label for="fTitle">Tiêu đề</label>
+      <input id="fTitle" type="text" placeholder="Để trống sẽ tự lấy từ trang web">
+      <div class="hint" id="metaHint"></div>
+    </div>
+    <div class="field">
+      <label for="fNote">Ghi chú <span style="font-weight:400">(dùng #tag để gắn thẻ)</span></label>
+      <textarea id="fNote" placeholder="Vì sao link này hay? #cfd #đọc-sau"></textarea>
+    </div>
+    <div class="field">
+      <label>Topic (bấm để ghim thủ công)</label>
+      <div class="pickers" id="topicPickers"></div>
+      <div class="hint">Không ghim gì thì app tự đoán topic theo từ khoá.</div>
+    </div>
+    <div class="sheet-actions">
+      <button class="btn ghost" type="button" data-close>Huỷ</button>
+      <button class="btn" type="button" id="saveNote">Lưu</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog class="sheet" id="settingsSheet">
+  <div class="sheet-inner">
+    <div class="sheet-head">
+      <h2>Cài đặt &amp; đồng bộ</h2>
+      <button class="icon-btn" type="button" data-close>✕</button>
+    </div>
+
+    <div class="stats" id="stats"></div>
+
+    <div class="callout">
+      <b>Kho dữ liệu là một repo GitHub.</b> Mỗi tháng một file JSON
+      (<code>YYYY-MM.json</code>). Trên máy tính chỉ cần <code>git pull</code> là
+      Claude Code đọc được toàn bộ note. <b>Hãy dùng một repo private riêng</b> —
+      đừng để note cá nhân trong repo public.
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label for="sOwner">GitHub user / org</label>
+        <input id="sOwner" type="text" autocapitalize="none" placeholder="manowars">
+      </div>
+      <div class="field">
+        <label for="sRepo">Repo (nên private)</label>
+        <input id="sRepo" type="text" autocapitalize="none" placeholder="link-notes">
+      </div>
+    </div>
+    <div class="row">
+      <div class="field">
+        <label for="sBranch">Branch</label>
+        <input id="sBranch" type="text" autocapitalize="none" placeholder="main">
+      </div>
+      <div class="field">
+        <label for="sPath">Thư mục dữ liệu</label>
+        <input id="sPath" type="text" autocapitalize="none" placeholder="linknotes/data">
+      </div>
+    </div>
+    <div class="field">
+      <label for="sToken">Fine-grained token (Contents: Read &amp; write)</label>
+      <input id="sToken" type="password" autocapitalize="none" placeholder="github_pat_…">
+      <div class="hint">
+        Token chỉ nằm trong máy này (localStorage), không gửi đi đâu ngoài
+        api.github.com. Tạo tại Settings → Developer settings → Personal access
+        tokens → Fine-grained, chọn đúng repo trên, quyền <b>Contents: Read and write</b>.
+      </div>
+    </div>
+
+    <div class="switch"><input type="checkbox" id="sAutoSync"><span>Tự đồng bộ khi mở app và sau khi lưu</span></div>
+    <div class="switch"><input type="checkbox" id="sFetchMeta"><span>Tự lấy tiêu đề trang (cần Netlify function)</span></div>
+    <div class="switch"><input type="checkbox" id="sFavicons"><span>Hiện favicon <span style="color:var(--muted)">(gọi google.com/s2/favicons — tắt nếu không muốn lộ tên miền)</span></span></div>
+
+    <div class="field">
+      <label for="sTheme">Giao diện</label>
+      <select id="sTheme">
+        <option value="auto">Theo hệ thống</option>
+        <option value="light">Sáng</option>
+        <option value="dark">Tối</option>
+      </select>
+    </div>
+
+    <div class="sheet-actions">
+      <button class="btn ghost" type="button" id="btnTest">Kiểm tra kết nối</button>
+      <button class="btn" type="button" id="btnSaveSettings">Lưu &amp; đồng bộ</button>
+    </div>
+    <div class="sheet-actions">
+      <button class="btn ghost" type="button" id="btnExport">Xuất JSON</button>
+      <button class="btn ghost" type="button" id="btnPushTopics">Đẩy luật topic</button>
+    </div>
+  </div>
+</dialog>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

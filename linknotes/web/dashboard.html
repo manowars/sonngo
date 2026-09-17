@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LinkNotes — Dashboard</title>
+<meta name="description" content="Xem và tổng hợp toàn bộ link đã lưu: hoạt động theo ngày, topic theo tháng, nguồn, loại, và bản tổng hợp Markdown.">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="dashboard.css">
+<script>
+  (function () {
+    try {
+      var s = JSON.parse(localStorage.getItem('linknotes.settings') || '{}');
+      if (s.theme === 'dark' || s.theme === 'light') document.documentElement.dataset.theme = s.theme;
+    } catch (e) { /* private mode */ }
+  })();
+</script>
+</head>
+<body>
+
+<header class="page-head">
+  <div class="wrap head-row">
+    <div class="brand"><span class="dot">🔗</span> LinkNotes <span class="sub">Dashboard</span></div>
+    <span class="source" id="source"></span>
+    <button class="btn ghost" id="btnTheme" title="Đổi giao diện">◐</button>
+    <a class="btn ghost" href="./" title="Mở app ghi link">App ghi link</a>
+    <button class="btn" id="btnRefresh">Tải lại từ GitHub</button>
+  </div>
+</header>
+
+<!-- One filter row, above everything it scopes. -->
+<div class="page-filters" id="filters" hidden>
+  <div class="wrap filter-row">
+    <div class="seg" id="rangeSeg" role="group" aria-label="Khoảng thời gian"></div>
+    <label class="field-inline">Topic
+      <select id="fTopic" aria-label="Lọc theo topic"></select>
+    </label>
+    <label class="field-inline">Loại
+      <select id="fKind" aria-label="Lọc theo loại"></select>
+    </label>
+    <input class="search" id="fSearch" type="search" placeholder="Tìm trong tiêu đề, link, ghi chú…" aria-label="Tìm kiếm">
+    <span class="slice" id="sliceCount"></span>
+  </div>
+</div>
+
+<main class="wrap" id="main" hidden>
+
+  <section class="hero-row">
+    <div class="hero">
+      <div class="hero-label">Link trong phạm vi đang chọn</div>
+      <div class="hero-value" id="heroValue">0</div>
+      <div class="hero-sub" id="heroSub"></div>
+    </div>
+    <div class="kpis" id="kpis"></div>
+  </section>
+
+  <section class="card">
+    <div class="card-head">
+      <div>
+        <h2>Nhịp lưu link</h2>
+        <p class="card-sub" id="trendSub">Số link lưu mỗi ngày</p>
+      </div>
+      <button class="toggle" data-table="trend">Bảng</button>
+    </div>
+    <div class="plot" id="trendPlot"></div>
+    <div class="table-twin" id="trendTable" hidden></div>
+  </section>
+
+  <section class="card">
+    <div class="card-head">
+      <div>
+        <h2>Lịch hoạt động</h2>
+        <p class="card-sub">Mỗi ô là một ngày; đậm hơn = lưu nhiều hơn</p>
+      </div>
+      <button class="toggle" data-table="cal">Bảng</button>
+    </div>
+    <div class="plot scroll-x" id="calPlot"></div>
+    <div class="scale-legend" id="calLegend"></div>
+    <div class="table-twin" id="calTable" hidden></div>
+  </section>
+
+  <section class="card">
+    <div class="card-head">
+      <div>
+        <h2>Topic theo tháng</h2>
+        <p class="card-sub">Một link có nhiều topic sẽ được đếm ở mỗi topic</p>
+      </div>
+      <button class="toggle" data-table="topic">Bảng</button>
+    </div>
+    <div class="legend" id="topicLegend"></div>
+    <div class="plot" id="topicPlot"></div>
+    <div class="table-twin" id="topicTable" hidden></div>
+  </section>
+
+  <section class="card">
+    <div class="card-head">
+      <div>
+        <h2>Loại nội dung</h2>
+        <p class="card-sub">Tỉ lệ trong phạm vi đang chọn</p>
+      </div>
+      <button class="toggle" data-table="kind">Bảng</button>
+    </div>
+    <div class="legend" id="kindLegend"></div>
+    <div class="plot" id="kindPlot"></div>
+    <div class="table-twin" id="kindTable" hidden></div>
+  </section>
+
+  <div class="grid-2">
+    <section class="card">
+      <div class="card-head">
+        <div><h2>Nguồn hay lưu</h2><p class="card-sub">Theo tên miền</p></div>
+        <button class="toggle" data-table="domain">Bảng</button>
+      </div>
+      <div class="plot" id="domainPlot"></div>
+      <div class="table-twin" id="domainTable" hidden></div>
+    </section>
+
+    <section class="card">
+      <div class="card-head">
+        <div><h2>Tag hay dùng</h2><p class="card-sub">Các #tag bạn gõ tay</p></div>
+        <button class="toggle" data-table="tag">Bảng</button>
+      </div>
+      <div class="plot" id="tagPlot"></div>
+      <div class="table-twin" id="tagTable" hidden></div>
+    </section>
+  </div>
+
+  <section class="card">
+    <div class="card-head">
+      <div><h2>Tổng hợp</h2><p class="card-sub">Bản Markdown của đúng phạm vi đang lọc</p></div>
+      <div class="card-actions">
+        <button class="btn ghost" id="btnCopyPrompt">Chép kèm prompt</button>
+        <button class="btn ghost" id="btnDownload">Tải .md</button>
+        <button class="btn" id="btnCopy">Chép</button>
+      </div>
+    </div>
+    <pre class="digest" id="digest"></pre>
+  </section>
+
+  <section class="card">
+    <div class="card-head">
+      <div><h2>Toàn bộ link</h2><p class="card-sub" id="listSub"></p></div>
+      <label class="field-inline">Sắp xếp
+        <select id="sortBy">
+          <option value="new">Mới nhất</option>
+          <option value="old">Cũ nhất</option>
+          <option value="title">Tiêu đề A→Z</option>
+          <option value="domain">Nguồn A→Z</option>
+        </select>
+      </label>
+    </div>
+    <div class="table-twin" id="notesTable"></div>
+    <button class="btn ghost more" id="btnMore" hidden>Xem thêm</button>
+  </section>
+</main>
+
+<section class="wrap setup" id="setup">
+  <div class="card">
+    <h2>Kết nối kho note</h2>
+    <p class="card-sub">
+      Dashboard đọc thẳng từ repo GitHub chứa note của bạn. Nó <b>chỉ đọc</b>,
+      không bao giờ ghi — nên một token chỉ có quyền <b>Contents: Read</b> là đủ.
+    </p>
+
+    <div class="row">
+      <label class="field">GitHub user / org<input id="sOwner" autocapitalize="none" placeholder="manowars"></label>
+      <label class="field">Repo<input id="sRepo" autocapitalize="none" placeholder="link-notes"></label>
+    </div>
+    <div class="row">
+      <label class="field">Branch<input id="sBranch" autocapitalize="none" placeholder="main"></label>
+      <label class="field">Thư mục dữ liệu<input id="sPath" autocapitalize="none" placeholder="linknotes/data"></label>
+    </div>
+    <label class="field">Token<input id="sToken" type="password" autocapitalize="none" placeholder="github_pat_…"></label>
+    <p class="hint">
+      Token lưu trong trình duyệt này (localStorage) và chỉ gửi tới api.github.com.
+      Nếu bạn đã cấu hình app ghi link trên cùng tên miền thì các ô trên đã được điền sẵn.
+    </p>
+    <div class="card-actions">
+      <button class="btn" id="btnConnect">Kết nối &amp; tải</button>
+    </div>
+
+    <hr class="rule">
+    <p class="card-sub">
+      Không muốn dùng token? Nạp thẳng file JSON — các file <code>YYYY-MM.json</code>
+      trong thư mục dữ liệu, hoặc file "Xuất JSON" từ app.
+    </p>
+    <label class="drop" id="drop">
+      <input type="file" id="fileInput" accept="application/json,.json" multiple hidden>
+      <span>Kéo thả file JSON vào đây, hoặc bấm để chọn</span>
+    </label>
+    <p class="err" id="setupErr" hidden></p>
+  </div>
+</section>
+
+<div class="toast" id="toast" role="status"></div>
+<script type="module" src="js/dash/main.js"></script>
+</body>
+</html>
