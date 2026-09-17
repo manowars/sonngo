@@ -1,0 +1,21 @@
+{
+  "name": "linknotes-android",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Capacitor wrapper that packages the LinkNotes web app as an Android APK.",
+  "type": "module",
+  "scripts": {
+    "prepare:web": "node prepare.mjs",
+    "add:android": "cap add android",
+    "patch": "node patch-android.mjs",
+    "sync": "cap sync android",
+    "build:debug": "cd android && ./gradlew assembleDebug"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.5.2",
+    "@capacitor/core": "^8.5.2"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.5.2"
+  }
+}

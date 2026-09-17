@@ -1,0 +1,11 @@
+{
+  "appId": "com.sonngo.linknotes",
+  "appName": "LinkNotes",
+  "webDir": "www",
+  "android": {
+    "allowMixedContent": false
+  },
+  "server": {
+    "androidScheme": "https"
+  }
+}
