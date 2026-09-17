@@ -1,6 +1,6 @@
 // App-shell cache. Notes themselves live in IndexedDB, so the app is fully
 // usable offline; sync resumes when the network returns.
-const CACHE = 'linknotes-v1';
+const CACHE = 'linknotes-v2';
 const SHELL = [
   './',
   './index.html',
@@ -13,6 +13,12 @@ const SHELL = [
   './js/classify.js',
   './icons/icon-192.png',
   './icons/icon-512.png',
+  './dashboard.html',
+  './dashboard.css',
+  './js/dash/main.js',
+  './js/dash/data.js',
+  './js/dash/charts.js',
+  './js/dash/digest.js',
 ];
 
 self.addEventListener('install', (e) => {
@@ -38,8 +44,9 @@ self.addEventListener('fetch', (e) => {
   // Navigations (including share-target URLs with query strings) fall back to
   // the cached shell so the app opens offline.
   if (req.mode === 'navigate') {
+    const shell = url.pathname.endsWith('/dashboard.html') ? './dashboard.html' : './index.html';
     e.respondWith(
-      fetch(req).catch(() => caches.match('./index.html').then((r) => r || caches.match('./')))
+      fetch(req).catch(() => caches.match(shell).then((r) => r || caches.match('./')))
     );
     return;
   }

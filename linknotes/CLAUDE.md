@@ -51,6 +51,21 @@ Một note:
 4. Cập nhật `count` = số note có `deletedAt === null`.
 5. Xong thì `git commit && git push`; lần mở app kế tiếp điện thoại sẽ kéo về.
 
+## Dashboard
+
+`web/dashboard.html` là bản xem cho máy tính: đọc thẳng repo dữ liệu qua GitHub
+API (**chỉ đọc**), vẽ biểu đồ và sinh bản tổng hợp Markdown. Nó dùng chung
+`classify.js` và chung cấu hình trong localStorage với app ghi link.
+
+- `js/dash/data.js` — tải, chuẩn hoá, lọc, gộp số liệu
+- `js/dash/charts.js` — biểu đồ SVG tự vẽ (không dùng thư viện)
+- `js/dash/digest.js` — sinh bản tổng hợp
+- `js/dash/main.js` — nối mọi thứ lại
+
+Màu biểu đồ lấy từ một bảng màu đã được kiểm định (an toàn với người mù màu ở cả
+chế độ sáng và tối). Slot màu gán theo thứ tự cố định của thực thể, **không** theo
+thứ hạng hiện tại — nên đổi bộ lọc không bao giờ đổi màu của một topic.
+
 ## Việc thường làm
 
 ```bash

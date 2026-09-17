@@ -16,6 +16,17 @@ cpSync(WEB, WWW, { recursive: true });
 // The service worker is pointless inside a WebView that already serves local
 // assets, and its cache makes app updates confusing.
 rmSync(join(WWW, 'sw.js'), { force: true });
+
+// The dashboard is a desktop view; shipping it would only bloat the APK, and
+// the link to it must go too or it would 404 inside the WebView.
+rmSync(join(WWW, 'dashboard.html'), { force: true });
+rmSync(join(WWW, 'dashboard.css'), { force: true });
+rmSync(join(WWW, 'js', 'dash'), { recursive: true, force: true });
+const indexPath = join(WWW, 'index.html');
+const index = readFileSync(indexPath, 'utf8');
+const stripped = index.replace(/\s*<a class="icon-btn" href="dashboard\.html"[\s\S]*?<\/a>/, '');
+if (stripped === index) throw new Error('dashboard link not found in index.html — update prepare.mjs');
+writeFileSync(indexPath, stripped);
 const mainPath = join(WWW, 'js', 'main.js');
 let main = readFileSync(mainPath, 'utf8');
 main = main.replace(

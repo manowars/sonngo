@@ -250,3 +250,7 @@ export function serializeNote(n) {
   delete rest.dirty;
   return rest;
 }
+
+// Exposed for the desktop dashboard, which caches its last GitHub pull in the
+// same database so it renders instantly and still works offline.
+export { idbGet, idbSet };

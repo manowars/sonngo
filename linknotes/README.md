@@ -18,6 +18,7 @@ với `git pull`.
 | Đường dẫn | Việc |
 | --- | --- |
 | `web/` | toàn bộ app (HTML/CSS/JS thuần, không cần build) — chạy trên Netlify và cũng là ruột của APK |
+| `web/dashboard.html` | dashboard cho máy tính: biểu đồ + bản tổng hợp, đọc thẳng từ GitHub |
 | `netlify/functions/meta.mjs` | lấy tiêu đề trang giúp (trình duyệt không tự fetch được vì CORS) |
 | `android/` | vỏ Capacitor để đóng gói thành `.apk` |
 | `scripts/` | công cụ chạy trên máy tính: `bootstrap`, `digest`, `reclassify`, `export` |
@@ -105,6 +106,41 @@ cd android && ./gradlew assembleDebug
 
 APK là bản **debug** (ký bằng khoá debug). Đủ để tự cài, không đưa lên Play
 Store được.
+
+---
+
+## Dashboard trên máy tính
+
+Mở `https://<tên-site>.netlify.app/dashboard.html` (hoặc bấm 📊 trên thanh đầu
+của app). Cùng tên miền nên nó **dùng lại luôn cấu hình bạn đã điền** — không
+phải nhập token lần nữa.
+
+Dashboard **chỉ đọc**, không bao giờ ghi. Nếu muốn an toàn hơn nữa, tạo riêng
+một token chỉ có quyền `Contents: Read` cho máy tính.
+
+Có gì trong đó:
+
+| Phần | Trả lời câu hỏi |
+| --- | --- |
+| Số lớn + 4 ô chỉ số | Tôi đang lưu bao nhiêu, tuần này nhiều hay ít hơn tuần trước |
+| **Nhịp lưu link** | Lưu đều hay lưu theo đợt (tự đổi sang tính theo tuần khi phạm vi dài) |
+| **Lịch hoạt động** | Ngày nào bận, ngày nào bỏ trống |
+| **Topic theo tháng** | Mối quan tâm dịch chuyển thế nào |
+| **Loại nội dung** | Đang lưu paper hay video hay tool |
+| **Nguồn / Tag hay dùng** | Hay lấy từ đâu, hay gắn thẻ gì |
+| **Tổng hợp** | Bản Markdown của đúng phạm vi đang lọc |
+| **Toàn bộ link** | Bảng tra cứu, sắp xếp được |
+
+Hàng lọc trên cùng (thời gian · topic · loại · tìm kiếm) **chi phối tất cả** —
+mọi biểu đồ, số liệu và bản tổng hợp đều đổi theo, nên các con số luôn khớp nhau.
+
+Mỗi biểu đồ có nút **Bảng** để xem đúng số liệu đó dưới dạng bảng.
+
+Nút **Chép kèm prompt** chép bản tổng hợp kèm sẵn một prompt để dán thẳng vào
+Claude Code — nhờ gom nhóm lại, chỉ ra link trùng, và đề xuất topic mới.
+
+Không muốn dùng token? Kéo thả thẳng các file `YYYY-MM.json` (hoặc file "Xuất
+JSON" từ app) vào khung ở màn hình kết nối.
 
 ---
 
