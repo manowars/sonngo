@@ -1,6 +1,7 @@
 import {
   state, load, subscribe, saveSettings, loadSettings,
   addNote, updateNote, removeNote, liveNotes,
+  hydrateSettings, requestPersistence, storageHealth,
 } from './store.js';
 import { sync, isConfigured, verifyAccess, pushTopics } from './github.js';
 import { extractUrl, extractUrlMatch, normalizeUrl, classify } from './classify.js';
@@ -61,7 +62,16 @@ function renderBanner(notes) {
   let action = '';
   let onAction = null;
 
-  if (!configured && notes.length) {
+  if (state.storageNote === 'readonly') {
+    tone = 'error';
+    text = 'Trình duyệt không cho lưu cấu hình (localStorage bị chặn) — mở lại tab là phải nhập token lần nữa. Thường do chế độ ẩn danh hoặc cài đặt chặn cookie/site data.';
+    action = 'Chi tiết';
+    onAction = openSettings;
+  } else if (state.storageNote === 'restored') {
+    text = 'Trình duyệt đã xoá cấu hình của site này — đã khôi phục từ bản lưu dự phòng. Xem mục Lưu trữ trong ⚙️ để khỏi bị lại.';
+    action = 'Xem';
+    onAction = openSettings;
+  } else if (!configured && notes.length) {
     text = `${pending || notes.length} note mới chỉ nằm trên máy này — chưa kết nối GitHub nên máy tính và dashboard không thấy được.`;
     action = 'Kết nối';
     onAction = openSettings;
@@ -207,7 +217,31 @@ function openSettings() {
   $('sFavicons').checked = s.favicons !== false;
   $('sTheme').value = s.theme;
   renderStats($('stats'), liveNotes(), state.topics, state.lastSync);
+  renderStorageHealth();
   $('settingsSheet').showModal();
+}
+
+async function renderStorageHealth() {
+  const host = $('storageHealth');
+  if (!host) return;
+  const h = await storageHealth();
+  host.textContent = '';
+  const rows = [
+    ['Địa chỉ site', h.origin],
+    ['Lưu cấu hình (localStorage)', h.localOk ? 'được' : 'BỊ CHẶN — sẽ mất khi đóng tab'],
+    ['Bản lưu dự phòng (IndexedDB)', h.mirrored ? 'có' : 'chưa có'],
+    ['Chống trình duyệt tự xoá', h.persisted === true ? 'bật' : h.persisted === false ? 'chưa bật' : 'trình duyệt không hỗ trợ'],
+  ];
+  for (const [k, v] of rows) {
+    const row = document.createElement('div');
+    row.className = 'health-row';
+    const key = document.createElement('span');
+    key.textContent = k;
+    const val = document.createElement('b');
+    val.textContent = v;
+    row.append(key, val);
+    host.appendChild(row);
+  }
 }
 
 function collectSettings() {
@@ -394,6 +428,8 @@ function wire() {
 /* ---------------- boot ---------------- */
 async function boot() {
   await load();
+  await hydrateSettings();
+  requestPersistence();
   applyTheme(state.settings.theme);
   wire();
   render();

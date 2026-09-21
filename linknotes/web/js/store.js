@@ -68,10 +68,84 @@ export function loadSettings() {
   }
 }
 
+// Settings are mirrored into IndexedDB, beside the notes. Browsers do not
+// always clear the two stores together — "clear cookies on exit", private
+// modes and tracking-prevention rules can wipe localStorage while IndexedDB
+// survives, which loses the token but keeps the notes. The mirror is the same
+// origin and the same protection as localStorage, so it adds no exposure.
 export function saveSettings(patch) {
   const next = { ...loadSettings(), ...patch };
-  try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(next)); } catch { /* private mode */ }
+  let stored = true;
+  try {
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(next));
+  } catch {
+    stored = false;
+  }
+  state.storageNote = stored && state.storageNote === 'readonly' ? '' : state.storageNote;
+  if (!stored) state.storageNote = 'readonly';
+  idbSet('settings', next).catch(() => { /* mirror is best-effort */ });
   return next;
+}
+
+// Run once at boot, after load(). Restores the settings when localStorage was
+// cleared but the IndexedDB mirror is still there.
+export async function hydrateSettings() {
+  let mirror = null;
+  try { mirror = await idbGet('settings'); } catch { /* no IDB */ }
+
+  const local = loadSettings();
+  const configured = (s) => Boolean(s && s.owner && s.repo && s.token);
+
+  if (!configured(local) && configured(mirror)) {
+    state.settings = { ...DEFAULT_SETTINGS, ...mirror };
+    state.storageNote = 'restored';
+    try {
+      localStorage.setItem(SETTINGS_KEY, JSON.stringify(state.settings));
+    } catch {
+      state.storageNote = 'readonly';
+    }
+    emit();
+    return { restored: true };
+  }
+
+  state.settings = local;
+  // Keep the mirror current for the next time the browser clears the site.
+  if (configured(local) && JSON.stringify(local) !== JSON.stringify(mirror)) {
+    idbSet('settings', local).catch(() => {});
+  }
+  return { restored: false };
+}
+
+// Ask the browser to exempt this origin from storage eviction. Chrome grants
+// it silently for installed apps and engaged sites; elsewhere it is a no-op.
+export async function requestPersistence() {
+  try {
+    if (!navigator.storage || !navigator.storage.persist) return null;
+    if (await navigator.storage.persisted()) return true;
+    return await navigator.storage.persist();
+  } catch {
+    return null;
+  }
+}
+
+export async function storageHealth() {
+  const probe = '__linknotes_probe__';
+  let localOk = false;
+  try {
+    localStorage.setItem(probe, '1');
+    localStorage.removeItem(probe);
+    localOk = true;
+  } catch { /* blocked */ }
+
+  let persisted = null;
+  try {
+    if (navigator.storage && navigator.storage.persisted) persisted = await navigator.storage.persisted();
+  } catch { /* unsupported */ }
+
+  let mirrored = false;
+  try { mirrored = Boolean(await idbGet('settings')); } catch { /* no IDB */ }
+
+  return { localOk, persisted, mirrored, origin: location.origin };
 }
 
 export function newId() {
@@ -86,6 +160,7 @@ export const state = {
   lastSync: null,
   syncStatus: 'idle',
   syncMessage: '',
+  storageNote: '',
 };
 
 const listeners = new Set();

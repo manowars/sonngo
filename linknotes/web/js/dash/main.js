@@ -8,7 +8,7 @@ import {
 } from './charts.js';
 import { buildDigest, buildPrompt } from './digest.js';
 import { KIND_META, dayKey } from '../classify.js';
-import { saveSettings } from '../store.js';
+import { saveSettings, hydrateSettings, requestPersistence } from '../store.js';
 
 const $ = (id) => document.getElementById(id);
 const DAY = 86400000;
@@ -627,6 +627,10 @@ async function refresh(explicit) {
 
 async function boot() {
   wire();
+  // Same restore path as the phone app: localStorage can be cleared while the
+  // IndexedDB mirror survives, which would otherwise ask for the token again.
+  await hydrateSettings();
+  requestPersistence();
   const cached = await loadCached();
   if (cached) {
     data = cached;

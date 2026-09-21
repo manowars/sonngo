@@ -141,9 +141,20 @@
       <label for="sToken">Fine-grained token (Contents: Read &amp; write)</label>
       <input id="sToken" type="password" autocapitalize="none" placeholder="github_pat_…">
       <div class="hint">
-        Token chỉ nằm trong máy này (localStorage), không gửi đi đâu ngoài
-        api.github.com. Tạo tại Settings → Developer settings → Personal access
-        tokens → Fine-grained, chọn đúng repo trên, quyền <b>Contents: Read and write</b>.
+        Token chỉ nằm trong máy này, không gửi đi đâu ngoài api.github.com.
+        Tạo tại Settings → Developer settings → Personal access tokens →
+        Fine-grained, chọn đúng repo trên, quyền <b>Contents: Read and write</b>.
+      </div>
+    </div>
+
+    <div class="callout">
+      <b>Lưu trữ</b>
+      <div id="storageHealth"></div>
+      <div style="margin-top:8px">
+        Phải nhập token mỗi lần mở lại trình duyệt? Kiểm tra: đang duyệt ẩn danh,
+        hoặc trình duyệt bật "xoá cookie &amp; dữ liệu site khi đóng" — hãy thêm
+        địa chỉ site ở trên vào danh sách ngoại lệ. Cài app vào màn hình chính
+        (Add to Home screen) cũng giúp trình duyệt giữ dữ liệu lâu hơn.
       </div>
     </div>
 

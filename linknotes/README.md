@@ -211,6 +211,35 @@ Rồi nhờ Claude Code, ví dụ:
 - Hai thiết bị sửa cùng lúc → không mất dữ liệu, chỉ có trường bị ghi đè theo
   bản mới hơn. (Đã kiểm thử hai "thiết bị" chạy song song.)
 
+## Cứ mở lại trình duyệt là phải nhập token lại?
+
+App lưu cấu hình vào **hai nơi**: `localStorage` (chính) và một bản dự phòng
+trong IndexedDB cạnh các note. Nhiều trình duyệt xoá hai kho này không cùng lúc,
+nên nếu `localStorage` bị xoá mà note vẫn còn thì app tự khôi phục token từ bản
+dự phòng và báo một dòng ở đầu màn hình.
+
+Nếu vẫn bị hỏi lại, mở ⚙️ → mục **Lưu trữ**. Nó cho biết:
+
+| Dòng | Ý nghĩa khi có vấn đề |
+| --- | --- |
+| Địa chỉ site | Mỗi tên miền là một kho riêng. `abc.netlify.app` và `deploy-preview-3--abc.netlify.app` **không** dùng chung cấu hình |
+| Lưu cấu hình (localStorage) | *BỊ CHẶN* → đang duyệt ẩn danh, hoặc trình duyệt chặn cookie/site data cho trang này |
+| Bản lưu dự phòng | *chưa có* → IndexedDB cũng bị chặn |
+| Chống trình duyệt tự xoá | *chưa bật* → trình duyệt có thể dọn dữ liệu khi thiếu chỗ |
+
+Cách xử lý, theo thứ tự hay gặp:
+
+1. **Đang ở chế độ ẩn danh?** Mở bằng cửa sổ thường.
+2. **Trình duyệt bật "xoá cookie & dữ liệu site khi đóng"?** Chrome:
+   Settings → Privacy and security → Third-party cookies →
+   *Delete cookies and site data when you close all windows* — hãy thêm địa chỉ
+   site vào danh sách **Allowed to use cookies**. Firefox có mục tương tự ở
+   Settings → Privacy & Security → Cookies and Site Data.
+3. **Cài app vào màn hình chính** (Chrome → ⋮ → Add to Home screen). App đã cài
+   được trình duyệt ưu tiên giữ dữ liệu, và app tự xin quyền lưu lâu dài.
+4. **Tiện ích chặn quảng cáo / tự xoá cookie** (Cookie AutoDelete…) → thêm site
+   vào ngoại lệ.
+
 ## Không thấy note đâu?
 
 Theo thứ tự này:
