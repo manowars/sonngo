@@ -1,0 +1,84 @@
+name: Build GrammarBubble .exe
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'grammarbubble/**'
+      - '.github/workflows/build-grammarbubble-exe.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  exe:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: grammarbubble
+        shell: pwsh
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: grammarbubble/requirements.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt pyinstaller
+
+      - name: Unit tests
+        run: python -m unittest -v
+
+      - name: Build GrammarBubble.exe
+        run: pyinstaller --noconfirm GrammarBubble.spec
+
+      # The exe has no console, so it reports through its exit code and,
+      # on failure, selftest-error.txt.
+      - name: Self-test the packaged exe
+        run: |
+          $p = Start-Process -FilePath dist\GrammarBubble.exe -ArgumentList '--selftest' -Wait -PassThru
+          if ($p.ExitCode -ne 0) {
+            if (Test-Path selftest-error.txt) { Get-Content selftest-error.txt }
+            throw "Self-test failed with exit code $($p.ExitCode)"
+          }
+          Write-Output "Self-test passed"
+
+      - name: Name the artifact
+        id: name
+        run: |
+          $file = "GrammarBubble-$(Get-Date -Format yyyyMMdd)-$($env:GITHUB_SHA.Substring(0,7)).exe"
+          Copy-Item dist\GrammarBubble.exe $file
+          "file=$file" >> $env:GITHUB_OUTPUT
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: grammarbubble-exe
+          path: grammarbubble/${{ steps.name.outputs.file }}
+          if-no-files-found: error
+          retention-days: 90
+
+      # A release gives a direct download link without logging in or unzipping.
+      - name: Publish a release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: grammarbubble-${{ github.run_number }}
+          name: GrammarBubble build ${{ github.run_number }}
+          prerelease: true
+          body: |
+            GrammarBubble cho Windows 10/11, build từ `${{ github.sha }}`.
+
+            1. Tải file `.exe` bên dưới, để ở thư mục nào cũng được rồi double-click.
+               Không cần cài Python.
+            2. Windows có thể hiện "Windows protected your PC" vì file chưa được ký
+               số: bấm **More info**, rồi **Run anyway**.
+            3. Chuột phải vào bubble, chọn **Mở file cấu hình**, điền
+               `anthropic_api_key` (hoặc chuyển `backend` sang `ollama`), lưu lại.
+               Lần click bubble tiếp theo sẽ dùng cấu hình mới.
+          files: grammarbubble/${{ steps.name.outputs.file }}

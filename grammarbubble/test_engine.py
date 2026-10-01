@@ -64,5 +64,29 @@ class EngineTests(unittest.TestCase):
         self.assertEqual(r.edits[0].type, "style")
 
 
+class ConfigTests(unittest.TestCase):
+    def test_broken_file_is_reported_and_not_overwritten(self):
+        import tempfile
+        from pathlib import Path
+
+        import config
+
+        with tempfile.TemporaryDirectory() as d:
+            path = Path(d) / "config.json"
+            old = config.CONFIG_PATH
+            config.CONFIG_PATH = path
+            try:
+                path.write_text('{"anthropic_api_key": "k",}', encoding="utf-8")
+                with self.assertRaises(ValueError):
+                    config.read()
+                self.assertEqual(config.load()["anthropic_api_key"], "")
+                config.save({"tone": "formal"})
+                self.assertIn('"k",}', path.read_text(encoding="utf-8"))  # untouched
+                path.write_text('\ufeff{"tone": "academic"}', encoding="utf-8")  # Notepad BOM
+                self.assertEqual(config.read()["tone"], "academic")
+            finally:
+                config.CONFIG_PATH = old
+
+
 if __name__ == "__main__":
     unittest.main()

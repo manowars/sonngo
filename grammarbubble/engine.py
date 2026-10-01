@@ -178,8 +178,9 @@ class ClaudeBackend:
             )
         except anthropic.AuthenticationError:
             raise CorrectionError(
-                "Claude API key is missing or invalid. Set ANTHROPIC_API_KEY or "
-                "`anthropic_api_key` in config.json."
+                "Claude API key is missing or invalid. Right-click the bubble → "
+                "\"Mở file cấu hình\" and fill in `anthropic_api_key` "
+                "(or set the ANTHROPIC_API_KEY environment variable)."
             ) from None
         except anthropic.RateLimitError:
             raise CorrectionError("Rate limited by the Claude API. Try again shortly.") from None

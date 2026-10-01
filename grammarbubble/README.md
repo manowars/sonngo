@@ -10,6 +10,25 @@ Ngôn ngữ được tự nhận diện: có chữ Hangul thì là tiếng Hàn,
 
 ## Cài đặt
 
+### Windows: tải file .exe (không cần Python)
+
+Vào trang **Releases** của repo, mở bản `GrammarBubble build …` mới nhất, tải `GrammarBubble-….exe` rồi double-click.
+
+- File chưa được ký số nên Windows SmartScreen có thể chặn ở lần đầu: bấm **More info**, rồi **Run anyway**.
+- Lần khởi động đầu mất vài giây vì file `.exe` phải tự giải nén.
+- Muốn app chạy cùng Windows: nhấn `Win+R`, gõ `shell:startup`, rồi đặt một shortcut của file `.exe` vào thư mục vừa mở.
+
+File `.exe` được build tự động bởi GitHub Actions (`.github/workflows/build-grammarbubble-exe.yml`) mỗi khi thư mục `grammarbubble/` thay đổi. Workflow chạy test, build bằng PyInstaller, chạy `GrammarBubble.exe --selftest`, rồi đăng file lên Releases. Muốn tự build trên máy Windows:
+
+```bat
+pip install -r requirements.txt pyinstaller
+pyinstaller GrammarBubble.spec
+```
+
+Kết quả nằm ở `dist\GrammarBubble.exe`. Icon được vẽ lại bằng `python make_icon.py` (cần Pillow).
+
+### Chạy từ mã nguồn
+
 Cần Python 3.10 trở lên.
 
 **Windows:** double-click `run.bat`.
@@ -19,7 +38,7 @@ Lần chạy đầu, script tự tạo `.venv` và cài `PySide6` và `anthropic
 
 ## Chọn bộ máy sửa lỗi
 
-Cấu hình nằm ở `~/.grammarbubble/config.json` (tự tạo ở lần chạy đầu). Muốn đổi cấu hình thì sửa file này rồi khởi động lại app.
+Cấu hình nằm ở `~/.grammarbubble/config.json` (trên Windows là `C:\Users\<tên>\.grammarbubble\config.json`), tự tạo ở lần chạy đầu. Cách nhanh nhất để sửa: chuột phải vào bubble, chọn **Mở file cấu hình**. Lưu file xong là lần click bubble tiếp theo dùng cấu hình mới, không cần khởi động lại app.
 
 ### 1. Claude API (mặc định, chất lượng tốt nhất, cần Internet)
 
@@ -67,7 +86,7 @@ Model local nhỏ sửa ngữ pháp được, nhưng góp ý văn phong kém hơ
 
 - **Click**: kiểm tra văn bản đang có trong clipboard.
 - **Kéo**: di chuyển bubble. Vị trí được nhớ cho lần sau.
-- **Chuột phải**: kiểm tra lại, mở cửa sổ kết quả, đổi ngôn ngữ hoặc giọng văn, thoát app.
+- **Chuột phải**: kiểm tra lại, mở cửa sổ kết quả, đổi ngôn ngữ hoặc giọng văn, mở file cấu hình, thoát app.
 - Khi app đang xử lý, bubble có một vòng cung vàng xoay quanh.
 - Trong cửa sổ kết quả, bạn có thể sửa ô *Văn bản gốc* rồi bấm **Kiểm tra lại**. Nhấn `Esc` để ẩn cửa sổ.
 
@@ -84,3 +103,4 @@ Test dùng backend giả nên không cần API key hay Ollama.
 - `app.py`: giao diện (bubble, cửa sổ kết quả, diff theo từ), chạy request ở luồng nền nên UI không bị đứng.
 - `engine.py`: prompt, JSON schema cho kết quả, backend Claude (structured outputs) và backend Ollama.
 - `config.py`: đọc và ghi `~/.grammarbubble/config.json`.
+- `GrammarBubble.spec`, `make_icon.py`, `icon.ico`, `icon.png`: đóng gói thành `.exe` và icon của app.

@@ -8,16 +8,21 @@ from __future__ import annotations
 
 import difflib
 import html
+import os
 import re
+import subprocess
 import sys
+from pathlib import Path
 
-from PySide6.QtCore import QPoint, QRectF, Qt, QThread, QTimer, Signal
+from PySide6.QtCore import QPoint, QPointF, QRectF, QUrl, Qt, QThread, QTimer, Signal
 from PySide6.QtGui import (
     QAction,
     QActionGroup,
     QColor,
+    QDesktopServices,
     QFont,
     QGuiApplication,
+    QIcon,
     QKeySequence,
     QPainter,
     QPen,
@@ -87,6 +92,31 @@ def diff_html(before: str, after: str) -> str:
 
 def plain_html(text: str) -> str:
     return html.escape(text).replace("\n", "<br>")
+
+
+def draw_bubble(p: QPainter, size: int, busy_angle: int | None = None):
+    """Paint the bubble; also used to render the app icon (make_icon.py)."""
+    p.setRenderHint(QPainter.Antialiasing)
+    inset = size / 15
+    rect = QRectF(inset, inset, size - 2 * inset, size - 2 * inset)
+    grad = QRadialGradient(rect.center() - QPointF(size * 0.13, size * 0.13), rect.width())
+    grad.setColorAt(0, QColor("#6366f1"))
+    grad.setColorAt(1, QColor("#3730a3"))
+    p.setPen(QPen(QColor(255, 255, 255, 220), size / 30))
+    p.setBrush(grad)
+    p.drawEllipse(rect)
+    if busy_angle is not None:
+        pen = QPen(QColor("#fbbf24"), size / 20)
+        pen.setCapStyle(Qt.RoundCap)
+        p.setPen(pen)
+        arc = size / 30
+        p.drawArc(rect.adjusted(arc, arc, -arc, -arc), -busy_angle * 16, 100 * 16)
+    p.setPen(QColor("white"))
+    font = QFont()
+    font.setBold(True)
+    font.setPixelSize(round(size / 4))
+    p.setFont(font)
+    p.drawText(rect, Qt.AlignCenter, "Aa\n가")
 
 
 class CheckWorker(QThread):
@@ -189,7 +219,8 @@ class ResultWindow(QWidget):
         close_btn = QPushButton("Đóng")
         close_btn.clicked.connect(self.hide)
         bottom = QHBoxLayout()
-        bottom.addWidget(QLabel(self._backend_label()))
+        self.backend_label = QLabel(self._backend_label())
+        bottom.addWidget(self.backend_label)
         bottom.addStretch()
         bottom.addWidget(self.copy_btn)
         bottom.addWidget(close_btn)
@@ -225,6 +256,10 @@ class ResultWindow(QWidget):
         self.cfg["language"] = self.lang_box.currentData()
         self.cfg["tone"] = self.tone_box.currentData()
         config.save(self.cfg)
+
+    def refresh_settings(self):
+        self.backend_label.setText(self._backend_label())
+        self.set_choices(self.cfg.get("language"), self.cfg.get("tone"))
 
     def set_choices(self, language: str | None = None, tone: str | None = None):
         if language:
@@ -304,6 +339,9 @@ class ResultWindow(QWidget):
             )
         self.edits.setHtml("".join(rows))
 
+    def show_error(self, message: str):
+        self._set_status(message, error=True)
+
     def _set_status(self, text: str, error: bool = False):
         self.status.setStyleSheet("color:#b91c1c" if error else "color:#444")
         self.status.setText(text)
@@ -360,25 +398,7 @@ class Bubble(QWidget):
 
     def paintEvent(self, _):
         p = QPainter(self)
-        p.setRenderHint(QPainter.Antialiasing)
-        rect = QRectF(4, 4, self.SIZE - 8, self.SIZE - 8)
-        grad = QRadialGradient(rect.center() - QPoint(8, 8), rect.width())
-        grad.setColorAt(0, QColor("#6366f1"))
-        grad.setColorAt(1, QColor("#3730a3"))
-        p.setPen(QPen(QColor(255, 255, 255, 220), 2))
-        p.setBrush(grad)
-        p.drawEllipse(rect)
-        if self._busy:
-            pen = QPen(QColor("#fbbf24"), 3)
-            pen.setCapStyle(Qt.RoundCap)
-            p.setPen(pen)
-            p.drawArc(rect.adjusted(2, 2, -2, -2), -self._angle * 16, 100 * 16)
-        p.setPen(QColor("white"))
-        font = QFont(self.font())
-        font.setBold(True)
-        font.setPixelSize(15)
-        p.setFont(font)
-        p.drawText(rect, Qt.AlignCenter, "Aa\n가")
+        draw_bubble(p, self.SIZE, self._angle if self._busy else None)
 
     def _tick(self):
         self._angle = (self._angle + 12) % 360
@@ -414,6 +434,14 @@ class Bubble(QWidget):
             self.check_clipboard()
 
     def check_clipboard(self):
+        # Re-read config.json so edits (API key, backend…) apply without a restart.
+        try:
+            self.cfg.update(config.read())
+        except ValueError as e:
+            self.window.show_near(self.pos())
+            self.window.show_error(f"File cấu hình bị lỗi, hãy sửa lại rồi thử lần nữa:\n{e}")
+            return
+        self.window.refresh_settings()
         text = QGuiApplication.clipboard().text()
         self.window.show_near(self.pos())
         self.window.start(text)
@@ -426,7 +454,7 @@ class Bubble(QWidget):
         self._choice_menu(menu, "Ngôn ngữ", LANG_CHOICES, "language")
         self._choice_menu(menu, "Giọng văn", TONE_CHOICES, "tone")
         menu.addSeparator()
-        menu.addAction(f"Cấu hình: {config.CONFIG_PATH}").setEnabled(False)
+        menu.addAction("Mở file cấu hình (API key, backend…)", open_config)
         menu.addAction("Thoát", QApplication.quit)
         menu.exec(e.globalPos())
 
@@ -445,10 +473,57 @@ class Bubble(QWidget):
         self.window.set_choices(**{key: value})
 
 
+def open_config():
+    try:
+        config.save(config.read())  # make sure the file exists and lists every key
+    except ValueError:
+        pass  # broken JSON: open it as-is so the user can fix it
+    if sys.platform == "win32":
+        subprocess.Popen(["notepad.exe", str(config.CONFIG_PATH)])
+    else:
+        QDesktopServices.openUrl(QUrl.fromLocalFile(str(config.CONFIG_PATH)))
+
+
+def resource_path(name: str) -> Path:
+    """Locate bundled files both from source and inside a PyInstaller build."""
+    return Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parent)) / name
+
+
+def selftest() -> int:
+    """Used by CI to check that a packaged build starts and can reach the SDK."""
+    os.environ["QT_QPA_PLATFORM"] = "offscreen"
+    app = QApplication(sys.argv)
+    cfg = dict(config.DEFAULTS)
+    bubble = Bubble(cfg)
+    bubble.show()
+    app.processEvents()
+    assert resource_path("icon.png").exists(), "icon.png not bundled"
+    # Build a real Claude request against a closed local port: this imports and
+    # exercises the whole SDK stack without network access or an API key.
+    backend = engine.ClaudeBackend(cfg["claude_model"], "low", api_key="selftest")
+    backend.client = backend.client.with_options(base_url="http://127.0.0.1:9", max_retries=0, timeout=5)
+    try:
+        backend.correct("He go home.", engine.build_system_prompt("en", "keep", "Vietnamese"))
+    except engine.CorrectionError as e:
+        assert "Cannot reach" in str(e), e
+    else:
+        raise AssertionError("expected a connection error")
+    return 0
+
+
 def main():
+    if "--selftest" in sys.argv:
+        try:
+            sys.exit(selftest())
+        except Exception:
+            import traceback
+
+            Path("selftest-error.txt").write_text(traceback.format_exc(), encoding="utf-8")
+            sys.exit(1)
     app = QApplication(sys.argv)
     app.setApplicationName("GrammarBubble")
     app.setQuitOnLastWindowClosed(False)
+    app.setWindowIcon(QIcon(str(resource_path("icon.png"))))
     bubble = Bubble(config.load())
     bubble.show()
     sys.exit(app.exec())
