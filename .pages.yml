@@ -69,9 +69,15 @@ content:
         order: desc
     fields:
       - name: title
-        label: Title
+        label: Title (English)
         type: string
         required: true
+      - name: title_vi
+        label: Title (Tiếng Việt, optional)
+        type: string
+      - name: title_ko
+        label: Title (한국어, optional)
+        type: string
       - name: image
         label: Image (or poster for a video)
         type: image
@@ -81,7 +87,13 @@ content:
         options:
           extensions: [mp4, webm]
       - name: caption
-        label: Caption
+        label: Caption (English)
+        type: text
+      - name: caption_vi
+        label: Caption (Tiếng Việt, optional)
+        type: text
+      - name: caption_ko
+        label: Caption (한국어, optional)
         type: text
       - name: category
         label: Category
@@ -97,3 +109,7 @@ content:
       - name: date
         label: Date
         type: date
+      - name: featured
+        label: Show on homepage
+        type: boolean
+        default: false

@@ -283,6 +283,16 @@
     </div>
   </section>
 
+  <!-- ============ SIMULATIONS (featured gallery videos, from data/featured.json) ============ -->
+  <section id="motion" hidden>
+    <div class="sec-head">
+      <div class="kicker" data-i18n="home.simKicker">In motion</div>
+      <h2 data-i18n="home.simTitle">Simulations in motion</h2>
+    </div>
+    <div class="sim-strip" id="sim-strip"></div>
+    <a class="btn ghost" href="gallery/" style="margin-top:22px" data-i18n="home.simAll">Open the gallery →</a>
+  </section>
+
   <!-- ============ EXPERIENCE / EDUCATION ============ -->
   <section id="experience">
     <div class="sec-head rv">
@@ -588,7 +598,36 @@ function renderSkills(){
   document.getElementById('mq2').innerHTML=S2.concat(S2).map(chip).join('');
 }
 renderSkills();
-document.addEventListener('langchange',()=>{render();renderSkills();renderLatest();});
+document.addEventListener('langchange',()=>{render();renderSkills();renderLatest();renderSimText();});
+
+/* ================= featured simulations ================= */
+let SIMS=[];
+const local=(it,k)=>(window.i18n.lang!=='en'&&it[k+'_'+window.i18n.lang])||it[k]||'';
+function renderSimText(){
+  document.querySelectorAll('#sim-strip .sim-card').forEach((c,i)=>{
+    const it=SIMS[i];
+    c.querySelector('h3').textContent=local(it,'title');
+    const p=c.querySelector('p'); if(p)p.textContent=local(it,'caption');
+  });
+}
+fetch('data/featured.json').then(r=>r.ok?r.json():[]).then(list=>{
+  SIMS=(Array.isArray(list)?list:[]).filter(it=>it.video||it.image);
+  if(!SIMS.length)return;
+  const strip=document.getElementById('sim-strip');
+  // media paths are site-absolute (/images/...); keep them relative so a local file preview works too
+  const rel=u=>String(u).replace(/^\//,'');
+  strip.innerHTML=SIMS.map(it=>`<a class="sim-card" href="gallery/">
+      ${it.video?`<video${it.image?` poster="${esc(rel(it.image))}" preload="none"`:' preload="metadata"'} muted loop playsinline><source src="${esc(rel(it.video))}"${/\.mp4$/i.test(it.video)?' type="video/mp4"':''}>${it.webm?`<source src="${esc(rel(it.webm))}" type="video/webm">`:''}</video>`
+               :`<img src="${esc(rel(it.image))}" alt="" loading="lazy">`}
+      <div class="g-cap"><h3></h3>${it.caption?'<p></p>':''}</div></a>`).join('');
+  renderSimText();
+  document.getElementById('motion').hidden=false;
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  const vio=new IntersectionObserver(es=>es.forEach(e=>{
+    if(e.isIntersecting){const pr=e.target.play();if(pr&&pr.catch)pr.catch(()=>{});}else e.target.pause();
+  }),{threshold:.3});
+  strip.querySelectorAll('video').forEach(v=>vio.observe(v));
+}).catch(()=>{});
 
 /* ================= latest blog posts ================= */
 let LATEST=[];

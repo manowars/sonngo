@@ -56,7 +56,13 @@
     var el;
     if (video) {
       el = document.createElement('video');
-      el.src = video;
+      [[video, /\.mp4$/i.test(video) ? 'video/mp4' : ''], [item.getAttribute('data-webm'), 'video/webm']].forEach(function (s) {
+        if (!s[0]) return;
+        var src = document.createElement('source');
+        src.src = s[0];
+        if (s[1]) src.type = s[1];
+        el.appendChild(src);
+      });
       el.controls = true; el.loop = true; el.playsInline = true; el.autoplay = true;
       var poster = item.getAttribute('data-full');
       if (poster) el.poster = poster;
@@ -66,7 +72,8 @@
       el.alt = item.getAttribute('data-caption') || '';
     }
     mediaBox.appendChild(el);
-    capBox.textContent = item.getAttribute('data-caption') || '';
+    var lang = window.i18n ? window.i18n.lang : 'en';
+    capBox.textContent = (lang !== 'en' && item.getAttribute('data-caption-' + lang)) || item.getAttribute('data-caption') || '';
     lb.hidden = false;
     document.body.style.overflow = 'hidden';
     closeBtn.focus();

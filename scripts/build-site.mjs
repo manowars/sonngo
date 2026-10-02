@@ -112,12 +112,18 @@ async function loadGallery() {
       console.warn(`skip content/gallery/${file}: needs an image or a video`);
       continue;
     }
+    const str = (k) => String(d[k] ?? '').trim();
+    // An optional WebM next to an MP4 (same name) is offered as a fallback source.
+    const webm = /\.mp4$/i.test(video) && video.startsWith('/') && existsSync(path.join(ROOT, video.replace(/\.mp4$/i, '.webm')))
+      ? video.replace(/\.mp4$/i, '.webm') : '';
     items.push({
-      title: String(d.title ?? '').trim(),
-      caption: String(d.caption ?? '').trim(),
+      // English text plus optional Vietnamese / Korean versions
+      title: str('title'), title_vi: str('title_vi'), title_ko: str('title_ko'),
+      caption: str('caption'), caption_vi: str('caption_vi'), caption_ko: str('caption_ko'),
       category: CATS.includes(d.category) ? d.category : 'other',
       date: dateStr(d.date),
-      image, video,
+      featured: d.featured === true,
+      image, video, webm,
     });
   }
   return items.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
@@ -184,6 +190,16 @@ ${extra}
 </html>
 `;
 }
+
+// Text with optional VI/KO versions, swapped client-side by i18n.js.
+function l10n(tag, item, key) {
+  const vi = item[`${key}_vi`], ko = item[`${key}_ko`];
+  return `<${tag}${vi || ko ? ` data-l10n${vi ? ` data-vi="${esc(vi)}"` : ''}${ko ? ` data-ko="${esc(ko)}"` : ''}` : ''}>${esc(item[key])}</${tag}>`;
+}
+const captionOf = (i, sfx = '') => [i[`title${sfx}`] || i.title, i[`caption${sfx}`] || i.caption].filter(Boolean).join(' — ');
+
+const videoSources = (i) => `<source src="${esc(i.video)}"${/\.mp4$/i.test(i.video) ? ' type="video/mp4"' : ''}>` +
+  (i.webm ? `<source src="${esc(i.webm)}" type="video/webm">` : '');
 
 const time = (d) => `<time datetime="${esc(d)}">${esc(d)}</time>`;
 const langBadge = (l) => `<span class="lang-badge">${esc(l.toUpperCase())}</span>`;
@@ -254,13 +270,13 @@ function galleryPage(items) {
   const cats = CATS.filter((c) => items.some((i) => i.category === c));
   const cards = items.map((i) => {
     const media = i.video
-      ? `<video src="${esc(i.video)}"${i.image ? ` poster="${esc(i.image)}"` : ''} muted loop playsinline preload="metadata"></video>`
+      ? `<video${i.image ? ` poster="${esc(i.image)}" preload="none"` : ' preload="metadata"'} muted loop playsinline>${videoSources(i)}</video>`
       : `<img src="${esc(i.image)}" alt="${esc(i.title || i.caption)}" loading="lazy">`;
-    return `<button type="button" class="g-item" data-cat="${i.category}" data-full="${esc(i.image)}" data-video="${esc(i.video)}" data-caption="${esc([i.title, i.caption].filter(Boolean).join(' — '))}">
+    return `<button type="button" class="g-item" data-cat="${i.category}" data-full="${esc(i.image)}" data-video="${esc(i.video)}" data-webm="${esc(i.webm)}" data-caption="${esc(captionOf(i))}" data-caption-vi="${esc(captionOf(i, '_vi'))}" data-caption-ko="${esc(captionOf(i, '_ko'))}">
       ${media}
       ${i.title || i.caption || i.date ? `<div class="g-cap">
-        ${i.title ? `<h3>${esc(i.title)}</h3>` : ''}
-        ${i.caption ? `<p>${esc(i.caption)}</p>` : ''}
+        ${i.title ? l10n('h3', i, 'title') : ''}
+        ${i.caption ? l10n('p', i, 'caption') : ''}
         <div class="post-meta"><span class="tag" data-i18n="cat.${i.category}">${CAT_EN[i.category]}</span>${i.date ? time(i.date) : ''}</div>
       </div>` : ''}
     </button>`;
@@ -329,6 +345,13 @@ await write('404.html', notFound());
 await write('data/posts.json', JSON.stringify(posts.slice(0, 3).map((p) => ({
   title: p.title, date: p.date, lang: p.lang, summary: p.summary, cover: p.cover, url: `blog/${p.slug}/`,
 })), null, 2));
+
+const pick = (i) => ({
+  title: i.title, title_vi: i.title_vi, title_ko: i.title_ko,
+  caption: i.caption, caption_vi: i.caption_vi, caption_ko: i.caption_ko,
+  image: i.image, video: i.video, webm: i.webm,
+});
+await write('data/featured.json', JSON.stringify(gallery.filter((i) => i.featured).slice(0, 8).map(pick), null, 2));
 
 if (SITE_URL) {
   const urls = ['/', '/blog/', '/gallery/', ...posts.map((p) => `/blog/${p.slug}/`)];
