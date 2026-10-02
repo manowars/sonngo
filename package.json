@@ -1,0 +1,17 @@
+{
+  "name": "sonngo-website",
+  "private": true,
+  "type": "module",
+  "description": "Personal academic website of Son Ich Ngo, with blog and gallery edited through Pages CMS",
+  "scripts": {
+    "build": "node scripts/build-site.mjs",
+    "preview": "INCLUDE_DRAFTS=1 node scripts/build-site.mjs && npx --yes serve dist"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "js-yaml": "^5.4.2",
+    "marked": "^18.0.14"
+  }
+}

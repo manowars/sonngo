@@ -1,0 +1,99 @@
+# Pages CMS (https://app.pagescms.org) — the editor for the blog and gallery.
+# Saving in Pages CMS commits to this repo; Netlify then rebuilds the site.
+
+media:
+  input: images/uploads
+  output: /images/uploads
+
+content:
+  - name: blog
+    label: Blog
+    type: collection
+    path: content/blog
+    filename: "{year}-{month}-{day}-{primary}.md"
+    view:
+      fields: [title, date, lang, draft]
+      primary: title
+      sort: [date, title]
+      default:
+        sort: date
+        order: desc
+    fields:
+      - name: title
+        label: Title
+        type: string
+        required: true
+      - name: date
+        label: Date
+        type: date
+        required: true
+      - name: lang
+        label: Language
+        description: Language the post is written in.
+        type: select
+        default: en
+        options:
+          values:
+            - { value: en, label: English }
+            - { value: vi, label: Tiếng Việt }
+            - { value: ko, label: 한국어 }
+      - name: summary
+        label: Summary
+        description: One or two sentences shown on the blog list and the homepage.
+        type: text
+      - name: cover
+        label: Cover image
+        type: image
+      - name: tags
+        label: Tags
+        type: string
+        list: true
+      - name: draft
+        label: Draft (not published)
+        type: boolean
+        default: false
+      - name: body
+        label: Content
+        type: rich-text
+
+  - name: gallery
+    label: Gallery
+    type: collection
+    path: content/gallery
+    filename: "{year}-{month}-{day}-{primary}.json"
+    view:
+      fields: [title, category, date]
+      primary: title
+      default:
+        sort: date
+        order: desc
+    fields:
+      - name: title
+        label: Title
+        type: string
+        required: true
+      - name: image
+        label: Image (or poster for a video)
+        type: image
+      - name: video
+        label: Video (MP4/WebM, optional — plays on loop)
+        type: file
+        options:
+          extensions: [mp4, webm]
+      - name: caption
+        label: Caption
+        type: text
+      - name: category
+        label: Category
+        type: select
+        default: cfd
+        options:
+          values:
+            - { value: cfd, label: CFD simulation }
+            - { value: lab, label: Laboratory }
+            - { value: conference, label: Conference }
+            - { value: teaching, label: Teaching }
+            - { value: other, label: Other }
+      - name: date
+        label: Date
+        type: date
