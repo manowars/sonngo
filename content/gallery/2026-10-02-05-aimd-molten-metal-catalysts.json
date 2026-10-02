@@ -1,0 +1,13 @@
+{
+  "title": "AIMD simulation for molten-metal catalysts",
+  "title_vi": "Mô phỏng AIMD cho xúc tác kim loại nóng chảy",
+  "title_ko": "용융금속 촉매의 AIMD 시뮬레이션",
+  "image": "/images/uploads/cfd/aimd-molten-metal-catalysts.jpg",
+  "video": "/images/uploads/cfd/aimd-molten-metal-catalysts.mp4",
+  "caption": "Ab initio molecular dynamics of C–H activation on Ni–Bi, liquid Ga and liquid Bi: atomic snapshots with the corresponding energy profiles.",
+  "caption_vi": "Động lực học phân tử ab initio cho quá trình hoạt hóa liên kết C–H trên Ni–Bi, Ga lỏng và Bi lỏng: cấu trúc nguyên tử cùng giản đồ năng lượng tương ứng.",
+  "caption_ko": "Ni–Bi, 액체 Ga, 액체 Bi 표면에서의 C–H 활성화에 대한 제일원리 분자동역학: 원자 구조 스냅샷과 해당 에너지 프로파일.",
+  "category": "cfd",
+  "date": "2026-10-02",
+  "featured": true
+}

@@ -1,0 +1,13 @@
+{
+  "title": "ML surrogate model for a digital twin",
+  "title_vi": "Mô hình thay thế học máy cho bản sao số (digital twin)",
+  "title_ko": "디지털 트윈을 위한 머신러닝 대리모델",
+  "image": "/images/uploads/cfd/ml-surrogate-digital-twin.jpg",
+  "video": "/images/uploads/cfd/ml-surrogate-digital-twin.mp4",
+  "caption": "Dynamic sharp-surfaced machine-learning surrogate model: CFD result (left) versus the predicted gas–liquid interface (right).",
+  "caption_vi": "Mô hình thay thế học máy động với bề mặt sắc nét: kết quả CFD (trái) so với bề mặt khí–lỏng được dự đoán (phải).",
+  "caption_ko": "선명한 계면을 재현하는 동적 머신러닝 대리모델: CFD 결과(왼쪽)와 예측된 기액 계면(오른쪽).",
+  "category": "cfd",
+  "date": "2026-10-02",
+  "featured": true
+}

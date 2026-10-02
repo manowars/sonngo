@@ -1,0 +1,13 @@
+{
+  "title": "Reactive fluidized-bed simulation",
+  "title_vi": "Mô phỏng tầng sôi có phản ứng",
+  "title_ko": "반응 유동층 시뮬레이션",
+  "image": "/images/uploads/cfd/reactive-fluidized-bed.jpg",
+  "video": "/images/uploads/cfd/reactive-fluidized-bed.mp4",
+  "caption": "Bubbling fluidized bed with immersed heat-exchange tubes: solid holdup, reaction heat and temperature (left to right).",
+  "caption_vi": "Tầng sôi sủi bọt với các ống trao đổi nhiệt nhúng chìm: hàm lượng pha rắn, nhiệt phản ứng và nhiệt độ (từ trái sang phải).",
+  "caption_ko": "열교환 튜브가 설치된 기포 유동층: 고체 체류량, 반응열, 온도 (왼쪽부터).",
+  "category": "cfd",
+  "date": "2026-10-02",
+  "featured": true
+}

@@ -113,6 +113,14 @@ nav a.brand{color:var(--fg);font-family:var(--display);font-weight:700;letter-sp
 .lightbox .lb-cap{color:var(--muted);text-align:center;max-width:800px;font-size:14.5px}
 .lightbox .lb-close{position:absolute;top:18px;right:18px}
 
+/* homepage strip of featured simulation videos */
+.sim-strip{display:flex;gap:16px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:12px;scrollbar-width:thin;scrollbar-color:var(--border-strong) transparent}
+.sim-card{flex:0 0 auto;display:flex;flex-direction:column;scroll-snap-align:start;border-radius:18px;border:1px solid var(--border);background:var(--card);overflow:hidden;transition:.3s}
+.sim-card:hover{border-color:rgba(56,189,248,.4)}
+.sim-card video,.sim-card img{height:340px;width:auto;display:block;background:#fff}
+.sim-card .g-cap{width:0;min-width:100%}
+@media(max-width:640px){.sim-card video,.sim-card img{height:260px}}
+
 footer{padding:36px 0 44px;border-top:1px solid var(--border);margin-top:80px}
 footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;color:var(--muted-2);font-size:13.5px}
 

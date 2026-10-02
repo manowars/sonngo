@@ -3,6 +3,8 @@
  * Markup: <el data-i18n="key"> — its English innerHTML stays in the page (SEO,
  * no-JS) and is restored when switching back to English; VI/KO come from D.
  * <input data-i18n-placeholder="key"> works the same for placeholders.
+ * <el data-l10n data-vi="…" data-ko="…"> carries its own translations (content
+ * from the CMS); missing ones fall back to the English text.
  * <time datetime="YYYY-MM-DD"> is re-formatted for the active locale.
  * Dynamic strings call window.i18n.t(key, vars). A 'langchange' event fires
  * on document after every switch so scripts can re-render.
@@ -120,6 +122,7 @@
       'a4': 'Cuộc thi Robot Sinh viên — Top 10',
       'a4.d': 'Giải thưởng cấp trường, Đại học Bách khoa Hà Nội.',
 
+      'home.simKicker': 'Mô phỏng', 'home.simTitle': 'Mô phỏng sống động', 'home.simAll': 'Xem thư viện →',
       'home.blogKicker': 'Từ blog', 'home.blogTitle': 'Bài viết mới', 'home.blogAll': 'Xem tất cả bài viết →',
 
       'contact.kicker': 'Liên hệ', 'contact.title': 'Hãy cùng hợp tác',
@@ -230,6 +233,7 @@
       'a4': '학생 로봇 경진대회 — 상위 10팀',
       'a4.d': '하노이 과학기술대학교 교내상.',
 
+      'home.simKicker': '시뮬레이션', 'home.simTitle': '움직이는 시뮬레이션', 'home.simAll': '갤러리 보기 →',
       'home.blogKicker': '블로그', 'home.blogTitle': '최근 글', 'home.blogAll': '모든 글 보기 →',
 
       'contact.kicker': '연락처', 'contact.title': '함께 연구해요',
@@ -287,6 +291,11 @@
       if (!original.has(el)) original.set(el, el.getAttribute('placeholder') || '');
       var v = lang === 'en' ? null : D[lang][el.getAttribute('data-i18n-placeholder')];
       el.setAttribute('placeholder', v != null ? v : original.get(el));
+    });
+    document.querySelectorAll('[data-l10n]').forEach(function (el) {
+      if (!original.has(el)) original.set(el, el.textContent);
+      var v = lang === 'en' ? null : el.getAttribute('data-' + lang);
+      el.textContent = v || original.get(el);
     });
     var fmt = new Intl.DateTimeFormat(LOCALE[lang], { year: 'numeric', month: 'long', day: 'numeric' });
     document.querySelectorAll('time[datetime]').forEach(function (el) {
