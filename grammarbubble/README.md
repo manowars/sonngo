@@ -61,17 +61,17 @@ Lấy API key ở https://platform.claude.com, rồi chọn một trong hai các
 
 1. Cài Ollama: https://ollama.com
 2. Tải model: `ollama pull qwen2.5:7b` (model này xử lý tiếng Hàn khá tốt; máy mạnh có thể dùng `qwen2.5:14b` hoặc `gemma3:12b`).
-3. Sửa config:
+3. Chạy GrammarBubble. Không cần sửa gì thêm:
+   - **Lần chạy đầu trên một máy**, nếu không có Claude API key mà Ollama đang chạy, app tự chuyển sang Ollama và tự chọn model đã cài (ưu tiên `qwen2.5`, rồi `qwen3`, `gemma3`…).
+   - **Đổi model hoặc đổi qua lại với Claude**: chuột phải bubble → **Bộ máy sửa lỗi**. Menu này liệt kê các model Ollama đang có trên máy.
 
-```json
-{
-  "backend": "ollama",
-  "ollama_model": "qwen2.5:7b",
-  "ollama_url": "http://localhost:11434"
-}
-```
+Nếu Ollama chạy ở máy khác trong mạng (ví dụ một máy có GPU), đặt `"ollama_url": "http://<địa chỉ IP>:11434"` trong file cấu hình. Máy chạy Ollama phải đặt biến môi trường `OLLAMA_HOST=0.0.0.0` thì máy khác mới kết nối vào được.
 
 Model local nhỏ sửa ngữ pháp được, nhưng góp ý văn phong kém hơn Claude.
+
+### Mang app sang máy khác
+
+Chỉ cần copy file `GrammarBubble-….exe`. Cấu hình (API key, vị trí bubble, model) lưu riêng ở từng máy, trong `C:\Users\<tên>\.grammarbubble\config.json`. Máy mới có Ollama thì app tự dùng Ollama như mô tả ở trên. Muốn mang theo cả cấu hình cũ, copy thêm file `config.json` đó vào cùng vị trí trên máy mới.
 
 ### Các tuỳ chọn khác
 

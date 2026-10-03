@@ -10,6 +10,7 @@ from __future__ import annotations
 import json
 import re
 import urllib.error
+import urllib.parse
 import urllib.request
 from dataclasses import dataclass, field
 
@@ -117,13 +118,13 @@ def parse_result(raw: str | dict, original_text: str, lang: str) -> Result:
             # Some local models wrap JSON in prose or code fences.
             match = re.search(r"\{.*\}", raw, re.S)
             if not match:
-                raise CorrectionError("Model did not return JSON.") from None
+                raise CorrectionError("Model không trả về JSON. Thử lại hoặc đổi model khác.") from None
             try:
                 data = json.loads(match.group(0))
             except json.JSONDecodeError as e:
-                raise CorrectionError(f"Model returned invalid JSON: {e}") from None
+                raise CorrectionError(f"Model trả về JSON lỗi: {e}") from None
     if not isinstance(data, dict) or not isinstance(data.get("corrected_text"), str):
-        raise CorrectionError("Model response is missing `corrected_text`.")
+        raise CorrectionError("Kết quả của model thiếu `corrected_text`. Thử lại hoặc đổi model khác.")
 
     edits = []
     for item in data.get("edits") or []:
@@ -178,22 +179,33 @@ class ClaudeBackend:
             )
         except anthropic.AuthenticationError:
             raise CorrectionError(
-                "Claude API key is missing or invalid. Right-click the bubble → "
-                "\"Mở file cấu hình\" and fill in `anthropic_api_key` "
-                "(or set the ANTHROPIC_API_KEY environment variable)."
+                "Thiếu hoặc sai Claude API key. Chuột phải bubble → \"Mở file cấu hình\" "
+                "rồi điền `anthropic_api_key`, hoặc chọn Ollama ở mục \"Bộ máy sửa lỗi\"."
             ) from None
         except anthropic.RateLimitError:
-            raise CorrectionError("Rate limited by the Claude API. Try again shortly.") from None
+            raise CorrectionError("Claude API đang giới hạn tốc độ. Đợi một lát rồi thử lại.") from None
         except anthropic.APIStatusError as e:
-            raise CorrectionError(f"Claude API error {e.status_code}: {e.message}") from None
+            raise CorrectionError(f"Lỗi Claude API {e.status_code}: {e.message}") from None
         except anthropic.APIConnectionError:
-            raise CorrectionError("Cannot reach the Claude API. Check your internet connection.") from None
+            raise CorrectionError("Không kết nối được Claude API. Kiểm tra Internet.") from None
 
         if response.stop_reason == "refusal":
-            raise CorrectionError("The model declined to edit this text.")
+            raise CorrectionError("Model từ chối sửa đoạn văn này.")
         if response.stop_reason == "max_tokens":
-            raise CorrectionError("Text is too long for one pass. Try a shorter selection.")
+            raise CorrectionError("Đoạn văn quá dài cho một lần sửa. Hãy chia nhỏ ra.")
         return "".join(b.text for b in response.content if b.type == "text")
+
+
+_DIRECT = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+
+
+def _urlopen(req, timeout: float):
+    """Open a request, skipping system proxies for Ollama on this machine."""
+    url = req.full_url if isinstance(req, urllib.request.Request) else req
+    host = urllib.parse.urlsplit(url).hostname or ""
+    if host in ("localhost", "127.0.0.1", "::1"):
+        return _DIRECT.open(req, timeout=timeout)
+    return urllib.request.urlopen(req, timeout=timeout)
 
 
 class OllamaBackend:
@@ -218,17 +230,57 @@ class OllamaBackend:
             f"{self.url}/api/chat", data=body, headers={"Content-Type": "application/json"}
         )
         try:
-            with urllib.request.urlopen(req, timeout=300) as resp:
+            with _urlopen(req, timeout=300) as resp:
                 payload = json.load(resp)
         except urllib.error.HTTPError as e:
             detail = e.read().decode(errors="replace")[:300]
-            raise CorrectionError(f"Ollama error {e.code}: {detail}") from None
+            if e.code == 404 and "not found" in detail:
+                raise CorrectionError(self._missing_model_message()) from None
+            raise CorrectionError(f"Lỗi Ollama {e.code}: {detail}") from None
         except (urllib.error.URLError, TimeoutError, ConnectionError):
             raise CorrectionError(
-                f"Cannot reach Ollama at {self.url}. Is `ollama serve` running and "
-                f"`ollama pull {self.model}` done?"
+                f"Không kết nối được Ollama ở {self.url}. Hãy mở app Ollama "
+                "(hoặc chạy `ollama serve`) rồi thử lại."
             ) from None
         return payload.get("message", {}).get("content", "")
+
+
+    def _missing_model_message(self) -> str:
+        models = list_ollama_models(self.url)
+        msg = f"Máy này chưa có model `{self.model}`."
+        if models:
+            msg += (
+                f" Các model đã cài: {', '.join(models)}. Chuột phải bubble → "
+                "\"Bộ máy sửa lỗi\" để chọn một model,"
+            )
+        return msg + f" hoặc chạy `ollama pull {self.model}`."
+
+
+# Models good at multilingual editing, best first; matched by name prefix.
+PREFERRED_OLLAMA_MODELS = ("qwen2.5", "qwen3", "gemma3", "gemma2", "llama3.1", "llama3.2", "mistral")
+
+
+def list_ollama_models(url: str, timeout: float = 2.0) -> list[str] | None:
+    """Installed chat models, or None if Ollama is not reachable."""
+    try:
+        with _urlopen(f"{url.rstrip('/')}/api/tags", timeout=timeout) as resp:
+            payload = json.load(resp)
+    except (urllib.error.URLError, TimeoutError, ConnectionError, ValueError):
+        return None
+    names = [m.get("name", "") for m in payload.get("models", []) if isinstance(m, dict)]
+    return sorted(n for n in names if n and "embed" not in n.lower())
+
+
+def pick_ollama_model(models: list[str], current: str | None = None) -> str | None:
+    if not models:
+        return None
+    if current in models:
+        return current
+    for prefix in PREFERRED_OLLAMA_MODELS:
+        for name in models:
+            if name.startswith(prefix):
+                return name
+    return models[0]
 
 
 def make_backend(cfg: dict):
@@ -240,9 +292,9 @@ def make_backend(cfg: dict):
 def check_text(text: str, cfg: dict, language: str = "auto", tone: str = "keep", backend=None) -> Result:
     text = text.strip("\n")
     if not text.strip():
-        raise CorrectionError("Clipboard is empty. Copy some text first.")
+        raise CorrectionError("Clipboard đang trống. Hãy copy đoạn văn trước.")
     if len(text) > cfg.get("max_chars", 8000):
-        raise CorrectionError(f"Text is longer than {cfg.get('max_chars', 8000)} characters.")
+        raise CorrectionError(f"Đoạn văn dài hơn {cfg.get('max_chars', 8000)} ký tự. Hãy chia nhỏ ra.")
     lang = detect_language(text) if language == "auto" else language
     system = build_system_prompt(lang, tone, cfg.get("explain_in", "Vietnamese"))
     raw = (backend or make_backend(cfg)).correct(text, system)

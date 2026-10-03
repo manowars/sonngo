@@ -78,7 +78,10 @@ jobs:
                Không cần cài Python.
             2. Windows có thể hiện "Windows protected your PC" vì file chưa được ký
                số: bấm **More info**, rồi **Run anyway**.
-            3. Chuột phải vào bubble, chọn **Mở file cấu hình**, điền
-               `anthropic_api_key` (hoặc chuyển `backend` sang `ollama`), lưu lại.
-               Lần click bubble tiếp theo sẽ dùng cấu hình mới.
+            3. Chọn bộ máy sửa lỗi:
+               - **Ollama (offline)**: nếu máy đã cài Ollama và có model (ví dụ
+                 `ollama pull qwen2.5:7b`), lần chạy đầu app tự dùng Ollama.
+                 Đổi model: chuột phải bubble → **Bộ máy sửa lỗi**.
+               - **Claude API**: chuột phải bubble → **Mở file cấu hình**, điền
+                 `anthropic_api_key`, lưu lại, rồi chọn Claude API ở **Bộ máy sửa lỗi**.
           files: grammarbubble/${{ steps.name.outputs.file }}

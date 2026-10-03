@@ -453,10 +453,41 @@ class Bubble(QWidget):
         menu.addSeparator()
         self._choice_menu(menu, "Ngôn ngữ", LANG_CHOICES, "language")
         self._choice_menu(menu, "Giọng văn", TONE_CHOICES, "tone")
+        self._backend_menu(menu)
         menu.addSeparator()
         menu.addAction("Mở file cấu hình (API key, backend…)", open_config)
         menu.addAction("Thoát", QApplication.quit)
         menu.exec(e.globalPos())
+
+    def _backend_menu(self, parent: QMenu):
+        sub = parent.addMenu("Bộ máy sửa lỗi")
+        group = QActionGroup(sub)
+        ollama = self.cfg.get("backend") == "ollama"
+
+        act = QAction("Claude API (cần API key, Internet)", sub, checkable=True, checked=not ollama)
+        act.triggered.connect(lambda: self._set_backend("claude"))
+        group.addAction(act)
+        sub.addAction(act)
+        sub.addSeparator()
+
+        models = engine.list_ollama_models(self.cfg["ollama_url"], timeout=1.5)
+        if models is None:
+            sub.addAction(f"Ollama: không kết nối được {self.cfg['ollama_url']}").setEnabled(False)
+        elif not models:
+            sub.addAction("Ollama: chưa có model (chạy: ollama pull qwen2.5:7b)").setEnabled(False)
+        for name in models or []:
+            checked = ollama and self.cfg.get("ollama_model") == name
+            act = QAction(f"Ollama · {name}", sub, checkable=True, checked=checked)
+            act.triggered.connect(lambda _=False, n=name: self._set_backend("ollama", n))
+            group.addAction(act)
+            sub.addAction(act)
+
+    def _set_backend(self, backend: str, model: str | None = None):
+        self.cfg["backend"] = backend
+        if model:
+            self.cfg["ollama_model"] = model
+        config.save(self.cfg)
+        self.window.refresh_settings()
 
     def _choice_menu(self, parent: QMenu, title: str, choices, key: str):
         sub = parent.addMenu(title)
@@ -505,10 +536,21 @@ def selftest() -> int:
     try:
         backend.correct("He go home.", engine.build_system_prompt("en", "keep", "Vietnamese"))
     except engine.CorrectionError as e:
-        assert "Cannot reach" in str(e), e
+        assert "Không kết nối được" in str(e), e
     else:
         raise AssertionError("expected a connection error")
     return 0
+
+
+def first_run_setup(cfg: dict) -> None:
+    """On a new machine, use the local Ollama when there is no Claude API key."""
+    if os.environ.get("ANTHROPIC_API_KEY") or cfg.get("anthropic_api_key"):
+        return
+    model = engine.pick_ollama_model(engine.list_ollama_models(cfg["ollama_url"]) or [])
+    if model:
+        cfg["backend"] = "ollama"
+        cfg["ollama_model"] = model
+        config.save(cfg)
 
 
 def main():
@@ -524,7 +566,11 @@ def main():
     app.setApplicationName("GrammarBubble")
     app.setQuitOnLastWindowClosed(False)
     app.setWindowIcon(QIcon(str(resource_path("icon.png"))))
-    bubble = Bubble(config.load())
+    new_install = not config.CONFIG_PATH.exists()
+    cfg = config.load()
+    if new_install:
+        first_run_setup(cfg)
+    bubble = Bubble(cfg)
     bubble.show()
     sys.exit(app.exec())
 
