@@ -29,6 +29,30 @@ Bên trong workflow:
 4. Xuất: **SplatToFile3D** → `.spz`; **RenderSplat** quỹ đạo → video 360°;
    nhánh **SplatToMesh** → `.glb` (thử nghiệm, mặc định tắt — bật bằng `--glb`)
 
+## Cách nhanh nhất trên Windows
+
+Trên máy Windows có GPU NVIDIA, sau khi clone repo (hoặc tải
+[file zip](https://github.com/manowars/sonngo/archive/refs/heads/main.zip)):
+
+1. Bỏ ảnh nhân vật vào `charlib\input\`.
+2. Nháy đúp `charlib\setup_windows.bat`.
+
+Script tự làm hết các bước bên dưới:
+
+- kiểm tra GPU;
+- tải ComfyUI bản portable vào `C:\AI` và cập nhật lên bản mới;
+- tải 5 model (~3,5 GB);
+- bật ComfyUI, tạo 3D cho mọi ảnh;
+- mở trang thư viện ở `http://127.0.0.1:8000`.
+
+Chạy lại bao nhiêu lần cũng được: bước nào xong rồi sẽ bỏ qua. Tham số hay dùng:
+
+```bat
+setup_windows.bat -ComfyDir D:\ComfyUI_windows_portable   :: dùng ComfyUI có sẵn
+setup_windows.bat -SetupOnly                              :: chỉ cài, chưa tạo 3D
+setup_windows.bat -Only hiep-si-lua -NoGlb                :: một nhân vật, không xuất .glb
+```
+
 ## 1. Cài ComfyUI và model
 
 Cần ComfyUI bản mới (template được lưu với comfy-core 0.22) và GPU NVIDIA.
