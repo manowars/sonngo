@@ -1,0 +1,22 @@
+# Site Netlify riêng cho thư viện nhân vật (giống LinkNotes).
+# Netlify → Site configuration → Build & deploy → Base directory = charlib
+# Không cần build: trang là HTML/JS tĩnh đọc library/index.json.
+[build]
+  publish = "."
+  command = "echo static"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+[[headers]]
+  for = "/library/index.json"
+  [headers.values]
+    Cache-Control = "no-cache"
+
+[[headers]]
+  for = "/*.spz"
+  [headers.values]
+    Content-Type = "application/octet-stream"
