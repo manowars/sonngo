@@ -1,0 +1,28 @@
+{
+  "generatedAt": "2026-11-03T00:26:56+00:00",
+  "count": 1,
+  "characters": [
+    {
+      "id": "demo-mannequin",
+      "name": "Ma-nơ-canh (demo)",
+      "role": "Demo",
+      "faction": "Hệ thống",
+      "tags": [
+        "demo",
+        "không phải TripoSplat"
+      ],
+      "description": "Nhân vật giả lập dựng bằng tools/make_demo_splat.py để thử trình xem. Xoá thư mục này khi đã có nhân vật thật.",
+      "demo": true,
+      "order": 9999,
+      "source": "characters/demo-mannequin/thumbnail.jpg",
+      "thumbnail": "characters/demo-mannequin/thumbnail.jpg",
+      "splat": "characters/demo-mannequin/model.spz",
+      "generation": {
+        "model": "tools/make_demo_splat.py",
+        "num_gaussians": 39994
+      },
+      "createdAt": "2026-11-03T00:00:00+00:00",
+      "updatedAt": "2026-11-03T00:00:00+00:00"
+    }
+  ]
+}

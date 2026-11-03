@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Thư viện nhân vật 3D</title>
+  <meta name="description" content="Thư viện nhân vật game dạng Gaussian splat 3D, tạo từ ảnh 2D bằng TripoSplat trên ComfyUI.">
+  <link rel="stylesheet" href="viewer/style.css">
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/",
+        "@sparkjsdev/spark": "https://cdn.jsdelivr.net/npm/@sparkjsdev/spark@2.3.1/dist/spark.module.js"
+      }
+    }
+  </script>
+</head>
+<body>
+  <header class="top">
+    <div class="brand">
+      <h1>Thư viện nhân vật</h1>
+      <p id="count" class="muted">Đang tải…</p>
+    </div>
+    <div class="tools">
+      <input id="q" type="search" placeholder="Tìm tên, tag, mô tả…" autocomplete="off">
+      <select id="role" aria-label="Lọc theo vai trò"><option value="">Mọi vai trò</option></select>
+      <select id="faction" aria-label="Lọc theo phe"><option value="">Mọi phe</option></select>
+      <label class="btn ghost" title="Xem một file .spz / .ply bất kỳ trên máy">
+        Mở file…<input id="file" type="file" accept=".spz,.ply,.splat,.ksplat,.sog" hidden>
+      </label>
+    </div>
+  </header>
+
+  <main>
+    <div id="grid" class="grid" aria-live="polite"></div>
+    <section id="empty" class="empty" hidden>
+      <h2>Chưa có nhân vật nào</h2>
+      <p>Bỏ ảnh nhân vật vào <code>input/</code> rồi chạy:</p>
+      <pre>python3 tools/charlib.py fetch-workflow
+python3 tools/charlib.py build --server http://127.0.0.1:8188</pre>
+      <p class="muted">Xem <code>README.md</code> để cài ComfyUI và model TripoSplat.</p>
+    </section>
+  </main>
+
+  <dialog id="detail" class="detail">
+    <div class="stage">
+      <canvas id="canvas"></canvas>
+      <div id="loading" class="loading" hidden>Đang tải splat…</div>
+      <div class="stage-tools">
+        <button id="spin" class="btn" aria-pressed="true" title="Tự xoay">⟳ Xoay</button>
+        <button id="flip" class="btn" title="Lật trục nếu nhân vật bị ngược">⇅ Lật</button>
+        <button id="reset" class="btn" title="Đưa camera về vị trí ban đầu">⌖ Camera</button>
+        <button id="bg" class="btn" title="Đổi màu nền">◐ Nền</button>
+      </div>
+    </div>
+    <aside class="info">
+      <button id="close" class="close" aria-label="Đóng">×</button>
+      <img id="d-src" class="src" alt="">
+      <h2 id="d-name"></h2>
+      <p id="d-sub" class="muted"></p>
+      <div id="d-tags" class="tags"></div>
+      <p id="d-desc"></p>
+      <div id="d-dl" class="downloads"></div>
+      <dl id="d-gen" class="gen"></dl>
+      <p class="muted small">Kéo để xoay · cuộn để phóng · chuột phải để dời</p>
+    </aside>
+  </dialog>
+
+  <script type="module" src="viewer/app.js"></script>
+</body>
+</html>

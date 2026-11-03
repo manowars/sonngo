@@ -1,0 +1,3 @@
+# Workflow mẫu tải bằng `tools/charlib.py fetch-workflow` (không phân phối lại).
+workflows/3d_triposplat_image_to_gaussian_splat.json
+__pycache__/

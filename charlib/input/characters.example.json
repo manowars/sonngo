@@ -1,0 +1,15 @@
+{
+  "_ghi_chu": "Đổi tên file thành characters.json. Khoá = tên file ảnh trong input/ đã chuẩn hoá (chữ thường, khoảng trắng → '-'). Mọi trường đều tuỳ chọn.",
+  "hiep-si-lua": {
+    "name": "Hiệp sĩ Lửa",
+    "role": "Tank",
+    "faction": "Vương quốc Phương Nam",
+    "tags": ["lửa", "cận chiến", "boss"],
+    "description": "Giáp nặng, khiên rực lửa.",
+    "seed": 46,
+    "num_gaussians": 262144,
+    "remove_background": true,
+    "viewer": { "flip": false },
+    "order": 1
+  }
+}
