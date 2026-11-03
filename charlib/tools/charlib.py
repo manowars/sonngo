@@ -24,6 +24,7 @@ import re
 import shutil
 import sys
 import time
+import unicodedata
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -53,7 +54,9 @@ def log(*a):
 
 
 def slugify(text: str) -> str:
-    text = text.strip().lower()
+    """'Pháp sư Băng' → 'phap-su-bang' (bỏ dấu tiếng Việt, đ → d)."""
+    text = text.strip().lower().replace("đ", "d")
+    text = "".join(c for c in unicodedata.normalize("NFKD", text) if not unicodedata.combining(c))
     text = re.sub(r"[^a-z0-9]+", "-", text)
     return text.strip("-") or "character"
 
@@ -390,7 +393,7 @@ def build_one(comfy: Comfy, base_api: dict, cid: str, img: Path, meta_in: dict, 
         old = json.loads((out_dir / "meta.json").read_text("utf-8"))
     meta = {
         "id": cid,
-        "name": meta_in.get("name") or old.get("name") or cid.replace("-", " ").title(),
+        "name": meta_in.get("name") or old.get("name") or re.sub(r"[_\s-]+", " ", img.stem).strip().title() or cid,
         "role": meta_in.get("role", old.get("role", "")),
         "faction": meta_in.get("faction", old.get("faction", "")),
         "tags": meta_in.get("tags", old.get("tags", [])),
@@ -527,7 +530,11 @@ def main(argv=None):
     sub.add_parser("index", help="dựng lại library/index.json").set_defaults(func=cmd_index)
 
     args = ap.parse_args(argv)
-    args.func(args)
+    try:
+        args.func(args)
+    except (RuntimeError, TimeoutError, OSError) as e:
+        log(f"Lỗi: {e}")
+        sys.exit(1)
 
 
 if __name__ == "__main__":

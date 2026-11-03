@@ -91,6 +91,13 @@ class BuildTest(unittest.TestCase):
         self.assertTrue(c["splat"].endswith(".spz"))
 
 
+class SlugTest(unittest.TestCase):
+    def test_vietnamese(self):
+        self.assertEqual(charlib.slugify("Pháp sư Băng"), "phap-su-bang")
+        self.assertEqual(charlib.slugify("Đại Tướng_Quân!"), "dai-tuong-quan")
+        self.assertEqual(charlib.slugify("  ???  "), "character")
+
+
 class SpzTest(unittest.TestCase):
     def test_header(self):
         tmp = Path(tempfile.mkdtemp()) / "a.spz"
