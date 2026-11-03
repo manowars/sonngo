@@ -499,6 +499,12 @@ def cmd_index(args):
 
 
 def main(argv=None):
+    # Windows (cp949/cp1252…) không in được tiếng Việt → tránh UnicodeEncodeError.
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding="utf-8", errors="replace")
+        except (AttributeError, ValueError):
+            pass
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
 
